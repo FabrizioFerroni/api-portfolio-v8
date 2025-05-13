@@ -33,7 +33,7 @@ describe('DecryptCredentialsService', () => {
       },
     );
 
-    const randomAesKey = Forge.random.getBytesSync(32); // 256-bit AES key
+    const randomAesKey = Forge.random.getBytesSync(32);
 
     const originalCredentialsString = JSON.stringify(originalCredentials);
     const cipherAes = Forge.cipher.createCipher(
@@ -105,7 +105,7 @@ describe('DecryptCredentialsService', () => {
       const originalConfigGet = mockConfigService.get;
       mockConfigService.get = jest.fn((key: string) => {
         if (key === 'PATH_PRIVATE_KEY') return 'dummy/path/to/private.key';
-        if (key === 'PASSWORD_PRIVATE_KEY') return 'wrong_passphrase'; // Passphrase incorrecta
+        if (key === 'PASSWORD_PRIVATE_KEY') return 'wrong_passphrase';
         return null;
       }) as any;
 
