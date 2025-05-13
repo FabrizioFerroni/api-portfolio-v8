@@ -8,6 +8,9 @@ import {
   PipelineStage,
 } from 'mongoose';
 import { MongoDBInterfaceRepository } from './mongo.base.interface';
+import { ObjectId } from 'bson';
+
+type Plain<T> = Omit<T, keyof Document>;
 
 export abstract class MongoDBRepository<T extends Document>
   implements MongoDBInterfaceRepository<T>

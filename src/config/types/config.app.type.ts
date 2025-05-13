@@ -22,6 +22,7 @@ export type ConfigApp = {
   filesPathRoute: string;
   diskThreshold: number;
   defaultUser: DefaultUser;
+  apiKey: string;
 };
 
 export type DbConfig = {
