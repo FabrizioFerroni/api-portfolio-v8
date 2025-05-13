@@ -82,7 +82,6 @@ describe('AuthController (e2e)', () => {
   const originalFsReadFileSync = fs.readFileSync;
 
   beforeAll(async () => {
-    console.log('E2E Auth: Iniciando beforeAll...');
     const keypair = Forge.pki.rsa.generateKeyPair({ bits: 2048 });
     e2eTestRsaPublicKeyPem = Forge.pki.publicKeyToPem(keypair.publicKey);
     e2eTestRsaPrivateKeyPemEncrypted = Forge.pki.encryptRsaPrivateKey(
