@@ -30,7 +30,6 @@ export abstract class MongoDBRepository<T extends Document>
 
   async save(entity: Partial<T>): Promise<T> {
     const created = new this.model(entity);
-    created._id = new ObjectId();
     const saved = await created.save();
     return saved.toObject() as T;
   }
