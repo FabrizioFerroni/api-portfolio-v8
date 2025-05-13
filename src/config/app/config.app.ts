@@ -36,5 +36,6 @@ export const configApp = (): ConfigApp => {
     },
     filesPathRoute: process.env.FILES_PATH_ROUTE || 'D:/',
     diskThreshold: Number(process.env.PERCENT_FREE) || 0.8,
+    apiKey: process.env.API_KEY || '',
   };
 };

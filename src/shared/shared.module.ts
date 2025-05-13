@@ -7,6 +7,9 @@ import { TerminusModule } from '@nestjs/terminus';
 import { StatusController } from './controllers/status.controller';
 import { TerminusFileLogger } from '@/config/logger/HealthFileLog';
 import { HttpModule } from '@nestjs/axios';
+import { TokenService } from './services/token.service';
+import { TransformDto } from './utils';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   controllers: [StatusController],
@@ -30,8 +33,19 @@ import { HttpModule } from '@nestjs/axios';
         }),
       }),
     }),
+    JwtModule.registerAsync({
+      useFactory: () => {
+        return {
+          secret: configApp().secret_jwt,
+          signOptions: {
+            expiresIn: '10m',
+          },
+        };
+      },
+    }),
   ],
-  exports: [MulterModule],
+  providers: [TokenService, TransformDto],
+  exports: [MulterModule, TokenService],
 })
 export class SharedModule {
   constructor() {
