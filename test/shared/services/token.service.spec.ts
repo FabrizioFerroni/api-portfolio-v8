@@ -63,7 +63,7 @@ describe('TokenService', () => {
   let mockConfigApp: jest.MockedFunction<typeof configApp>;
 
   const mockJwtRefreshSecret = 'test-super-secret-refresh';
-  const mockDefaultSecret = 'test-super-secret-default'; // Si jwtService.verify usa un secret por defecto
+  const mockDefaultSecret = 'test-super-secret-default';
 
   beforeEach(async () => {
     mockConfigApp = configApp as jest.MockedFunction<typeof configApp>;
@@ -271,14 +271,13 @@ describe('TokenService', () => {
 
     it('should generate new access and refresh tokens', () => {
       jwtServiceMock.sign
-        .mockReturnValueOnce(newAccessToken) // Para access_token
-        .mockReturnValueOnce(newRefreshToken); // Para refresh_token
+        .mockReturnValueOnce(newAccessToken)
+        .mockReturnValueOnce(newRefreshToken);
 
       const result = service.refreshJWTToken(payload);
 
-      expect(jwtServiceMock.sign).toHaveBeenCalledWith(payload); // Para access_token
+      expect(jwtServiceMock.sign).toHaveBeenCalledWith(payload);
       expect(jwtServiceMock.sign).toHaveBeenCalledWith(payload, {
-        // Para refresh_token
         secret: mockJwtRefreshSecret,
         expiresIn: '1h',
       });

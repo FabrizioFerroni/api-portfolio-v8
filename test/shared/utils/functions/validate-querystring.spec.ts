@@ -25,7 +25,7 @@ describe('validateQuerystringDto', () => {
   });
 
   it('should throw BadRequestException if required fields are missing', async () => {
-    const query = { age: '25' }; // falta `name`
+    const query = { age: '25' };
 
     await expect(
       validateQuerystringDto(ExampleQueryDto, query),

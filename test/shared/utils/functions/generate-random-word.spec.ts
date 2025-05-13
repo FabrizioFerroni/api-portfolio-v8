@@ -18,7 +18,7 @@ describe('generateRandomWord', () => {
   it('should generate different words (not always same)', () => {
     const word1 = generateRandomWord();
     const word2 = generateRandomWord();
-    expect(word1).not.toBe(word2); // poco probable que coincidan
+    expect(word1).not.toBe(word2);
   });
   it('should generate a word of length 0', () => {
     const word = generateRandomWord(0);

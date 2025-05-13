@@ -10,7 +10,6 @@ describe('DecryptCredentialsService', () => {
   let service: DecryptCredentialsService;
   let mockConfigService: jest.Mocked<ConfigService>;
 
-  // --- Variables para generar datos de prueba ---
   let testPrivateKeyPem: string;
   let testPublicKeyPem: string;
   const testPassphrase = 'test_super_secret_passphrase';
@@ -50,7 +49,6 @@ describe('DecryptCredentialsService', () => {
       cipherAes.output.getBytes(),
     );
 
-    // 4. Encriptar la clave AES aleatoria con la clave pública RSA (RSA-OAEP)
     const publicKey = Forge.pki.publicKeyFromPem(testPublicKeyPem);
     encryptedRandomKeyPart = Forge.util.encode64(
       publicKey.encrypt(randomAesKey, 'RSA-OAEP'),
@@ -85,7 +83,6 @@ describe('DecryptCredentialsService', () => {
     service = module.get<DecryptCredentialsService>(DecryptCredentialsService);
     mockConfigService = module.get(ConfigService) as jest.Mocked<ConfigService>;
 
-    // Mockear fs.readFileSync para que devuelva nuestra clave privada de prueba
     mockFs.readFileSync.mockReturnValue(testPrivateKeyPem);
   });
 
@@ -146,7 +143,6 @@ describe('DecryptCredentialsService', () => {
     it('should call splitStringCipher and (ideally) return split parts or ensure state is set', () => {
       service['cipher'] = encryptedInput;
 
-      // Llamar al getter
       const result = service.splitCipher;
 
       expect(service['randomKey']).toEqual(encryptedRandomKeyPart);

@@ -38,43 +38,12 @@ type ExpectedUserInResponse = {
   avatar: string;
 };
 
-/* const mockUserDocument = (
-  id: string,
-  email: string,
-  passwordHash: string,
-  active: boolean,
-  otherProps: Partial<User> = {},
-): UserDocument => {
-  const defaultUser: Partial<User> = {
-    _id: new Types.ObjectId(id),
-    name: otherProps.name || 'Test',
-    lastname: otherProps.lastname || 'User',
-    email: email,
-    password: passwordHash,
-    avatar:
-      otherProps.avatar ||
-      'https://res.cloudinary.com/fabrizio-dev/image/upload/v1671107994/fabrizio-dev/default_user_acmdr1.webp',
-    active: active,
-    createdAt: otherProps.createdAt || new Date(),
-    updatedAt: otherProps.updatedAt || null,
-  };
-
-  const userWithOverrides = { ...defaultUser, ...otherProps };
-
-  return {
-    ...userWithOverrides,
-    _id: userWithOverrides._id,
-    save: jest.fn().mockResolvedValue(this),
-    toJSON: jest.fn().mockReturnValue(userWithOverrides),
-  } as unknown as UserDocument; 
-};*/
-
 const mockUserDocument = (
   idString: string,
   email: string,
   passwordHash: string,
   active: boolean,
-  otherPropsToMerge: Partial<User> = {}, // User (clase POJO) NO debe tener _id
+  otherPropsToMerge: Partial<User> = {},
 ): UserDocument => {
   const objectId = new Types.ObjectId(idString);
 
@@ -89,25 +58,17 @@ const mockUserDocument = (
     active: active,
     createdAt: otherPropsToMerge.createdAt || new Date(),
     updatedAt: otherPropsToMerge.updatedAt || null,
-    // ... cualquier otra propiedad de la clase User
   };
 
-  // 1. Combinar las propiedades de la clase User y otherPropsToMerge
-  // El orden aquí significa que otherPropsToMerge puede sobrescribir userClassProperties
-  // si tienen claves en común (lo cual está bien para name, lastname, etc. si se pasan).
   const combinedProps = {
     ...userClassProperties,
     ...otherPropsToMerge,
   };
 
-  // 2. Construir el objeto final que simula UserDocument, añadiendo _id al final
-  // para asegurar que es el nuestro y no uno de otherPropsToMerge (si tuviera _id).
   const finalDocumentObject = {
     ...combinedProps,
-    _id: objectId, // Añadir/Sobrescribir _id aquí para que sea el ObjectId correcto
+    _id: objectId,
   };
-
-  // console.log('mockUserDocument - finalDocumentObject:', JSON.stringify(finalDocumentObject, null, 2));
 
   const doc = {
     ...finalDocumentObject,
@@ -208,10 +169,9 @@ describe('AuthService', () => {
           },
         ),
       ] as UserDocument[];
-      // Lo que esperamos que transformDtoArray devuelva (simulando class-transformer)
       const expectedDtoArray: Partial<AuthResponseDto>[] = [
         {
-          /* _id: new Types.ObjectId().toString(), */
+          _id: new Types.ObjectId().toString(),
           name: 'User One',
           lastname: 'Test',
           email: 'test1@example.com',
@@ -226,7 +186,7 @@ describe('AuthService', () => {
 
       expect(transformDtoMock.transformDtoArray).toHaveBeenCalledWith(
         users,
-        AuthResponseDto, // Se pasa la clase DTO real
+        AuthResponseDto,
       );
       expect(result).toEqual(expectedDtoArray);
     });
@@ -245,7 +205,6 @@ describe('AuthService', () => {
           avatar: 'avatar1.png',
         },
       );
-      // Lo que esperamos que transformDtoObject devuelva (simulando class-transformer)
       const expectedDto: Partial<AuthResponseDto> = {
         _id: new Types.ObjectId().toString(),
         name: 'User One',
@@ -261,7 +220,7 @@ describe('AuthService', () => {
 
       expect(transformDtoMock.transformDtoObject).toHaveBeenCalledWith(
         user,
-        AuthResponseDto, // Se pasa la clase DTO real
+        AuthResponseDto,
       );
       expect(result).toEqual(expectedDto);
     });
@@ -330,17 +289,15 @@ describe('AuthService', () => {
       lastname: userDoc.lastname,
       email: userDoc.email,
       avatar: userDoc.avatar,
-      // Campos excluidos no deben estar aquí: active, password, createdAt, updatedAt
     };
 
     it('should successfully login a user and return transformed user data (no tokens)', async () => {
       userRepositoryMock.findByEmail.mockResolvedValue(userDoc);
       mockValidatePassword.mockResolvedValue(true);
-      // El servicio de transformación devuelve el objeto de usuario como lo haría class-transformer
       transformDtoMock.transformDtoObject.mockReturnValue(
         expectedUserTransformed as AuthResponseDto,
       );
-      jest.spyOn(service, 'handleSuccessfulLogin').mockResolvedValue(undefined); // Asegurar que es mockeado si es async
+      jest.spyOn(service, 'handleSuccessfulLogin').mockResolvedValue(undefined);
 
       const result = await service.login(loginDto);
 
@@ -399,16 +356,15 @@ describe('AuthService', () => {
     });
 
     it('should throw BadRequestException and call handleFailedLogin for invalid password (not blocking)', async () => {
-      // Crear una instancia de userDoc fresca y específica para este test
       const currentTestUserId = new Types.ObjectId();
       const specificUserDoc = mockUserDocument(
         currentTestUserId.toString(),
-        loginDto.email, // Usa el loginDto del scope del describe
+        loginDto.email,
         'passwordForThisTest',
         true,
       );
 
-      userRepositoryMock.findByEmail.mockResolvedValue(specificUserDoc); // Usa la instancia específica
+      userRepositoryMock.findByEmail.mockResolvedValue(specificUserDoc);
       mockValidatePassword.mockResolvedValue(false);
 
       const handleFailedLoginSpy = jest
@@ -458,14 +414,11 @@ describe('AuthService', () => {
     let activeUserDocForThisTest: UserDocument;
     let mockFullTokenResponse: LoginResponseAuth;
     let expectedPayloadForTokenService: PayloadDto;
-    const testUserId = new Types.ObjectId(); // Un ObjectId para este test
+    const testUserId = new Types.ObjectId();
 
     beforeEach(() => {
-      // Un beforeEach específico para este describe
-      // Crear el activeUserDoc manualmente para este conjunto de tests
-      // Esto bypassa mockUserDocument temporalmente para este bloque problemático
       const rawUserObject = {
-        _id: testUserId, // Usar el ObjectId directamente
+        _id: testUserId,
         email: 'active-specific@example.com',
         password: 'hashedPasswordSpecific',
         active: true,
@@ -474,42 +427,22 @@ describe('AuthService', () => {
         avatar: 'specific_avatar.png',
         createdAt: new Date(),
         updatedAt: null,
-        // Asegúrate de incluir todas las propiedades que tu tipo User/UserDocument podría tener,
-        // incluso si son opcionales, para que coincida lo más posible con un UserDocument real.
       };
 
       activeUserDocForThisTest = {
         ...rawUserObject,
-        _id: rawUserObject._id, // Asegurar que _id (ObjectId) está aquí
-        // Mockear los métodos de Mongoose Document que podrían ser llamados o esperados
-        save: jest.fn().mockResolvedValue(this), // 'this' aquí es problemático, mejor mockResolvedValue(activeUserDocForThisTest) cuando esté definido
-        toJSON: jest.fn().mockReturnValue(rawUserObject), // toJSON devuelve el objeto plano
-        // Añade otros métodos si son necesarios (lean, populate, etc.)
+        _id: rawUserObject._id,
+        save: jest.fn().mockResolvedValue(this),
+        toJSON: jest.fn().mockReturnValue(rawUserObject),
       } as unknown as UserDocument;
 
-      // Para que save devuelva la instancia mockeada (comportamiento común)
       (activeUserDocForThisTest.save as jest.Mock).mockResolvedValue(
         activeUserDocForThisTest,
       );
 
-      // --- DEBUG CRÍTICO ---
-      if (!activeUserDocForThisTest || !activeUserDocForThisTest._id) {
-        console.error(
-          '!!! generateJWTTokenAuth beforeEach: activeUserDocForThisTest o su _id es undefined !!!',
-        );
-        console.log(
-          'activeUserDocForThisTest:',
-          JSON.stringify(activeUserDocForThisTest, null, 2),
-        );
-        throw new Error(
-          'Fallo crítico en la creación de activeUserDocForThisTest',
-        );
-      }
-      // --- FIN DEBUG ---
-
       mockFullTokenResponse = {
         user: {
-          _id: activeUserDocForThisTest._id.toString(), // Ahora debería funcionar
+          _id: activeUserDocForThisTest._id.toString(),
           name: activeUserDocForThisTest.name,
           lastname: activeUserDocForThisTest.lastname,
           email: activeUserDocForThisTest.email,
@@ -526,9 +459,9 @@ describe('AuthService', () => {
     });
 
     it('should call tokenService.generateJWTToken and return its result for an active user', () => {
-      tokenServiceMock.generateJWTToken.mockReturnValue(mockFullTokenResponse); // Asumiendo síncrono
+      tokenServiceMock.generateJWTToken.mockReturnValue(mockFullTokenResponse);
 
-      const result = service.generateJWTTokenAuth(activeUserDocForThisTest); // Usar la versión local
+      const result = service.generateJWTTokenAuth(activeUserDocForThisTest);
 
       expect(tokenServiceMock.generateJWTToken).toHaveBeenCalledWith(
         expectedPayloadForTokenService,
@@ -538,23 +471,19 @@ describe('AuthService', () => {
     });
 
     it('should throw BadRequestException if the user is not active', () => {
-      // Crear un usuario inactivo manualmente para este test
       const inactiveUserDocForThisTest = {
         _id: new Types.ObjectId(),
         email: 'inactive-specific@example.com',
         password: 'hashedPasswordInactive',
-        active: false, // Inactivo
+        active: false,
         name: 'Inactive Specific',
         lastname: 'User Specific',
         avatar: 'inactive_specific_avatar.png',
         createdAt: new Date(),
         updatedAt: null,
         save: jest.fn().mockResolvedValue(this),
-        toJSON: jest.fn().mockReturnValue({
-          /* ...el objeto plano... */
-        }),
+        toJSON: jest.fn().mockReturnValue({}),
       } as unknown as UserDocument;
-      // ... (ajustar el mock de save y toJSON para inactiveUserDocForThisTest)
 
       expect(() =>
         service.generateJWTTokenAuth(inactiveUserDocForThisTest),
@@ -567,14 +496,13 @@ describe('AuthService', () => {
     it('should call userRepository.updateUser with correct parameters', async () => {
       const userId = new Types.ObjectId().toString();
       const activeStatus = false;
-      // Simulamos el usuario que sería devuelto por updateUser
       const mockUpdatedUser = mockUserDocument(
         userId,
         'email@test.com',
         'hash',
         activeStatus,
       );
-      userRepositoryMock.updateUser.mockResolvedValue(mockUpdatedUser as any); // Cast si updateUser devuelve User y no UserDocument
+      userRepositoryMock.updateUser.mockResolvedValue(mockUpdatedUser as any);
 
       const result = await service.saveUser(userId, activeStatus);
 
@@ -589,7 +517,6 @@ describe('AuthService', () => {
     });
   });
 
-  /* refresh */
   describe('refresh', () => {
     const refreshTokenDto: RefreshtokenDto = { token: 'valid-refresh-token' };
     const decodedPayloadFromTokenService: PayloadDto & Record<string, any> = {
@@ -605,7 +532,6 @@ describe('AuthService', () => {
     };
 
     it('should successfully refresh tokens if refresh token is valid', () => {
-      // Síncrono
       tokenServiceMock.verifyTokenCatch.mockReturnValue(
         decodedPayloadFromTokenService,
       );
@@ -662,5 +588,4 @@ describe('AuthService', () => {
       expect(tokenServiceMock.refreshJWTToken).not.toHaveBeenCalled();
     });
   });
-  /* fin refresh */
 });

@@ -5,41 +5,13 @@ import {
   HealthCheckService,
   MemoryHealthIndicator,
   MongooseHealthIndicator,
-} from '@nestjs/terminus'; // Asegúrate de importar HealthCheckService
+} from '@nestjs/terminus';
 import { StatusController } from '@/shared/controllers/status.controller';
 
-// Crear un mock del servicio HealthCheckService
 jest.mock('@nestjs/terminus', () => ({
   HealthCheck: jest.fn().mockImplementation(() => (target, key, descriptor) => {
-    // Decorador vacío que no hace nada
     return descriptor;
   }),
-
-  /*  HealthCheckService: jest.fn().mockImplementation(() => ({
-    check: jest.fn().mockResolvedValue({
-      status: 'ok',
-      info: {
-        database: { status: 'up' },
-        memory_heap: { status: 'up' },
-        storage_percent: { status: 'up' },
-      },
-      error: {},
-      details: {},
-    }),
-  })),
-
-  HttpHealthIndicator: jest.fn().mockImplementation(() => ({
-    isHealthy: jest.fn().mockResolvedValue({ status: 'up' }),
-  })),
-  MongooseHealthIndicator: jest.fn().mockImplementation(() => ({
-    isHealthy: jest.fn().mockResolvedValue({ status: 'up' }),
-  })),
-  MemoryHealthIndicator: jest.fn().mockImplementation(() => ({
-    isHealthy: jest.fn().mockResolvedValue({ status: 'up' }),
-  })),
-  DiskHealthIndicator: jest.fn().mockImplementation(() => ({
-    isHealthy: jest.fn().mockResolvedValue({ status: 'up' }),
-  })), */
 
   HealthCheckService: jest.fn().mockImplementation(() => ({
     check: jest.fn().mockResolvedValue({
@@ -120,9 +92,8 @@ describe('StatusController', () => {
   });
 
   it('debe responder con un estado ok y tener los checks', async () => {
-    const result = await controller.check(); // Llamada al controlador
+    const result = await controller.check();
 
-    // Verificar el resultado del check mockeado
     expect(result.status).toBe('ok');
     expect(result.info).toHaveProperty('database');
     expect(result.info).toHaveProperty('memory_heap');

@@ -9,7 +9,7 @@ import {
 import { CreateUserDto } from '@/features/api/user/dto/create.dto';
 import { Types } from 'mongoose';
 
-const userEmail = `e2e-${Date.now()}@example.com`;
+const userEmail = `e2e-user-${Date.now()}@example.com`;
 
 describe('UserController (e2e)', () => {
   let app: INestApplication;

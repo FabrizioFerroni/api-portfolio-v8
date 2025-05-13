@@ -75,7 +75,7 @@ describe('AuthController (e2e)', () => {
   let accessToken: string | null = null;
   let refreshToken: string | null = null;
 
-  const testUserEmail = `e2e-auth-ctrl-${Date.now()}@example.com`;
+  const testUserEmail = `e2e-auth-${Date.now()}@example.com`;
   const testUserPassword = 'PasswordE2EAuth123!';
   let hashedPassword = '';
 
@@ -99,12 +99,6 @@ describe('AuthController (e2e)', () => {
 
         return originalFsReadFileSync(pathOrDescriptor, options);
       });
-
-    /*if (!process.env.MONGODB_URI) {
-      console.warn(
-        'E2E Auth Warning: Variables de entorno para DB no completamente seteadas en process.env. Usando defaults si es posible.',
-      );
-    }*/
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -288,7 +282,6 @@ describe('AuthController (e2e)', () => {
   describe('/auth/refresh (POST)', () => {
     beforeEach(async () => {
       if (!createdUser || !createdUser._id) {
-        // Verificar que createdUser está definido
         throw new Error(
           'createdUser no está definido en beforeEach de /auth/refresh',
         );
@@ -375,7 +368,6 @@ describe('AuthController (e2e)', () => {
     });
 
     it('should return user profile with a valid access token', async () => {
-      // console.log('E2E Auth Test: Profile - inicio');
       const response = await request(app.getHttpServer())
         .get('/auth/profile')
         .set('Authorization', `Bearer ${accessToken}`)

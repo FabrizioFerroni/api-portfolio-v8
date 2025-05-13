@@ -8,7 +8,7 @@ import { LoginDto } from '@/features/auth/dtos/login.dto';
 
 jest.mock('class-validator', () => ({
   ...jest.requireActual('class-validator'),
-  validate: jest.fn(), // Mockear solo la función validate
+  validate: jest.fn(),
 }));
 
 const mockExecutionContext = (body: any): ExecutionContext => {
@@ -80,8 +80,8 @@ describe('LocalGuard', () => {
         password: 'password123',
       };
       const context = mockExecutionContext(validBody);
-      mockValidate.mockResolvedValue([]); // Sin errores de validación
-      superCanActivateSpy.mockResolvedValue(true); // Simular que super.canActivate tiene éxito
+      mockValidate.mockResolvedValue([]);
+      superCanActivateSpy.mockResolvedValue(true);
 
       await expect(guard.canActivate(context)).resolves.toBe(true);
       expect(mockValidate).toHaveBeenCalledWith(

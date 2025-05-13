@@ -20,7 +20,7 @@ jest.mock('@/shared/utils/functions/validate-passwords', () => ({
   hashPassword: jest.fn(),
 }));
 
-const userEmail = `e2e-${Date.now()}@example.com`;
+const userEmail = `user-${Date.now()}@example.com`;
 describe('UserService', () => {
   let service: UserService;
   let userRepo: IUserRepository;
@@ -84,21 +84,17 @@ describe('UserService', () => {
   });
 
   it('should throw BadRequestException if user already exists', async () => {
-    // Mocking repository to simulate user already exists
     userRepo.userAlredyExist = jest.fn().mockResolvedValue(true);
 
-    // Act & Assert
     await expect(service.create(createUserDto)).rejects.toThrowError(
       new BadRequestException(UserError.USER_ALREADY_EXIST),
     );
   });
 
   it('should throw BadRequestException if user creation fails', async () => {
-    // Mocking repository to simulate failure in user creation
     userRepo.userAlredyExist = jest.fn().mockResolvedValue(false);
-    userRepo.createUser = jest.fn().mockResolvedValue(null); // Simulate failure
+    userRepo.createUser = jest.fn().mockResolvedValue(null);
 
-    // Act & Assert
     await expect(service.create(createUserDto)).rejects.toThrowError(
       new BadRequestException(UserError.USER_ERROR),
     );
