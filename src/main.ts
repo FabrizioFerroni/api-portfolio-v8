@@ -4,9 +4,11 @@ import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import { configApp } from './config/app/config.app';
 import { setupSwagger } from './config/swagger/config.swagger.app';
 import { configStrings } from './config/app/config.string';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  /* const app = await NestFactory.create(AppModule); */
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const hostCors = configApp().frontHost;
   const hostMethods = configApp().hostMethod;
   const hostallowedHeaders = configApp().hostAllowedHeader;
@@ -22,6 +24,8 @@ async function bootstrap() {
     methods: hostMethods,
     allowedHeaders: hostallowedHeaders,
   });
+
+  app.set('trust proxy', true);
 
   /* app.useGlobalFilters(new CustomExceptionFilter()); */
 
