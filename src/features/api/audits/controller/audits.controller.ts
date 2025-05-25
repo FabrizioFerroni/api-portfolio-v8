@@ -1,6 +1,6 @@
 import { ErrorResponseDto } from '@/shared/utils/dtos/swagger/errorresponse.dto';
 import { OkResponseDto } from '@/shared/utils/dtos/swagger/okresponse.dto';
-import { Controller, Delete, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiInternalServerErrorResponse,
@@ -70,36 +70,5 @@ export class AuditsController {
   @ApiOperation({ summary: 'Get audit by id' })
   async findOne(@Param('id') id: string) {
     return await this.auditService.findOne(id);
-  }
-
-  @Delete(':id')
-  @ApiOkResponse({
-    type: OkResponseDto,
-    isArray: false,
-    description: 'Delete a audit with id',
-  })
-  @ApiBadRequestResponse({
-    type: ErrorResponseDto,
-    isArray: false,
-    description: 'Bad Request',
-  })
-  @ApiUnauthorizedResponse({
-    type: ErrorResponseDto,
-    isArray: false,
-    description: 'Unauthorized',
-  })
-  @ApiNotFoundResponse({
-    type: ErrorResponseDto,
-    isArray: false,
-    description: 'Audit not found',
-  })
-  @ApiInternalServerErrorResponse({
-    type: ErrorResponseDto,
-    isArray: false,
-    description: 'Internal Server Error',
-  })
-  @ApiOperation({ summary: 'Delete an audit by id' })
-  async delete(@Param('id') id: string) {
-    return await this.auditService.delete(id);
   }
 }
