@@ -32,6 +32,7 @@ export type DbConfig = {
   password: string;
   database: string;
   timezone: string;
+  authSource: string;
 };
 
 export type DefaultUser = {

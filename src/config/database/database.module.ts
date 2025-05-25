@@ -7,7 +7,7 @@ import { MongooseModule } from '@nestjs/mongoose';
   imports: [
     MongooseModule.forRootAsync({
       useFactory: async () => ({
-        uri: `mongodb://${configApp().database.username}:${configApp().database.password}@${configApp().database.host}:${configApp().database.port}/${configApp().database.database}`,
+        uri: `mongodb://${configApp().database.username}:${configApp().database.password}@${configApp().database.host}:${configApp().database.port}/${configApp().database.database}?authSource=${configApp().database.authSource}`,
         retryAttempts: 5,
         verboseRetryLog: true,
       }),
