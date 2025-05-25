@@ -14,6 +14,7 @@ export const configApp = (): ConfigApp => {
       database: process.env.DATABASE_BASEDATOS || 'test',
       timezone:
         process.env.DATABASE_TIMEZONE || 'America/Argentina/Buenos_Aires',
+      authSource: process.env.DATABASE_AUTH_SOURCE || 'admin',
     },
     passPrivateKey: process.env.PASSWORD_PRIVATE_KEY || '',
     pathPrivateKey: process.env.PATH_PRIVATE_KEY || '',
