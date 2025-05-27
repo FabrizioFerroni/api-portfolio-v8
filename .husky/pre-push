@@ -5,4 +5,4 @@
 npm run test -- --passWithNoTests
 
 # Correr test end to end 
-#npm run test:e2e -- --passWithNoTests
+npm run test:e2e -- --passWithNoTests
