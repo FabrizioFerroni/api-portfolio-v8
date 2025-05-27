@@ -1,6 +1,8 @@
 import { ConfigApp } from '../types/config.app.type';
 
 export const configApp = (): ConfigApp => {
+  const enabledEmail = () =>
+    process.env.MAIL_ENABLED === 'true' ? true : false;
   return {
     env: process.env.NODE_ENV || 'development',
     apiPort: Number(process.env.API_PORT) || 8080,
@@ -38,5 +40,37 @@ export const configApp = (): ConfigApp => {
     filesPathRoute: process.env.FILES_PATH_ROUTE || 'D:/',
     diskThreshold: Number(process.env.PERCENT_FREE) || 0.8,
     apiKey: process.env.API_KEY || '',
+
+    enabledEmailService: enabledEmail(),
+    transportFallback: process.env.TRANSPORT_FALLBACK || 'smtp://',
+    emailFrom: process.env.EMAIL_FROM || '"SGD Sports" <info@api-sgd.cloud>',
+    mail: {
+      host: process.env.MAIL_HOST || 'localhost',
+      port: +(process.env.MAIL_PORT || '1025'),
+      auth: {
+        user: process.env.MAIL_USER || 'user',
+        pass: process.env.MAIL_PASS || 'pass',
+      },
+    },
+
+    rabbit: {
+      protocol: process.env.RABBITMQ_PROTOCOL || 'amqp',
+      host: process.env.RABBITMQ_HOST || 'localhost',
+      port: +(process.env.RABBITMQ_PORT || '5672'),
+      username: process.env.RABBITMQ_USER || 'guest',
+      password: process.env.RABBITMQ_PASS || 'guest',
+      vhost: process.env.RABBITMQ_VHOST || '/',
+      colas: Array(process.env.RABBITMQ_COLAS) || [
+        'recovery',
+        'forgot_password',
+        'login',
+        'register',
+      ],
+    },
+
+    appMail: process.env.APP_MAIL || '',
+    appImg: process.env.APP_IMG || '',
+    exchange: process.env.RABBITMQ_EXCHANGES || '',
+    mailInfo: process.env.MAIL_INFO || '',
   };
 };

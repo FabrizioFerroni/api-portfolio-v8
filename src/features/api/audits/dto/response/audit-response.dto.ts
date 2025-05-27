@@ -1,3 +1,4 @@
+import { formatDate } from '@/shared/utils/functions/format-date';
 import { Exclude, Expose, Transform } from 'class-transformer';
 
 export class AuditResponseDto {
@@ -18,16 +19,7 @@ export class AuditResponseDto {
   ipAddress: string;
 
   @Expose({ name: 'date' })
-  @Transform(
-    ({ value }) => {
-      if (!(value instanceof Date)) value = new Date(value);
-      const day = String(value.getDate()).padStart(2, '0');
-      const month = String(value.getMonth() + 1).padStart(2, '0');
-      const year = value.getFullYear();
-      return `${day}/${month}/${year}`;
-    },
-    { toPlainOnly: true },
-  )
+  @Transform(({ value }) => formatDate(value), { toPlainOnly: true })
   dateAudit: Date;
 
   @Exclude()
