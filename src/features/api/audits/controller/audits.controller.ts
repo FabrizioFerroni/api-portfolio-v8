@@ -37,7 +37,7 @@ export class AuditsController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Get all audits' })
-  async getAllUsers() {
+  async getAllAudits() {
     return await this.auditService.getAllAudits();
   }
 

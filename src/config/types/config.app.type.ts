@@ -23,6 +23,18 @@ export type ConfigApp = {
   diskThreshold: number;
   defaultUser: DefaultUser;
   apiKey: string;
+
+  //email
+  enabledEmailService: boolean;
+  emailFrom: string;
+  mail: MailConfig;
+  rabbit: RabbitConfig;
+  transportFallback: string;
+
+  appMail: string;
+  appImg: string;
+  exchange: string;
+  mailInfo: string;
 };
 
 export type DbConfig = {
@@ -38,4 +50,25 @@ export type DbConfig = {
 export type DefaultUser = {
   username: string;
   password: string;
+};
+
+type RabbitConfig = {
+  protocol: string;
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  vhost: string;
+  colas: string[];
+};
+
+type MailConfig = {
+  host: string;
+  port: number;
+  auth: Auth;
+};
+
+type Auth = {
+  user: string;
+  pass: string;
 };
