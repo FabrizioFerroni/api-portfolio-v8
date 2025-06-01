@@ -3,7 +3,6 @@ import { TransformDto } from '@/shared/utils';
 import { BadRequestException } from '@nestjs/common';
 import { hashPassword } from '@/shared/utils/functions/validate-passwords';
 import { UserService } from '@/features/api/user/service/user.service';
-import { UserRepository } from '@/features/api/user/repository/user.repository';
 import { CreateUserDto } from '@/features/api/user/dto/create.dto';
 import { UserDocument } from '@/features/api/user/schema/user.schema';
 import { UserResponseDto } from '@/features/api/user/dto/response/response.dto';
