@@ -22,14 +22,14 @@ describe('SubscriberController (e2e)', (): void => {
 
   // ─── GET /subscribers ───────────────────────────────────────────────────────
 
-  it('/subscribers (GET) deberia retornar lista de subscribers', async () => {
+  it('/subscribers (GET) should return list of subscribers', async () => {
     const res = await request(app.getHttpServer()).get('/subscribers');
     expect(res.status).toBe(200);
     expect(res.body).toBeDefined();
     expect(Array.isArray(res.body.data.subscribers)).toBe(true);
   });
 
-  it('/subscribers (GET) deberia soportar paginacion', async () => {
+  it('/subscribers (GET) should support pagination', async () => {
     const res = await request(app.getHttpServer())
       .get('/subscribers')
       .query({ page: 1, limit: 5 });
@@ -42,7 +42,7 @@ describe('SubscriberController (e2e)', (): void => {
 
   // ─── GET /subscribers/count ──────────────────────────────────────────────────
 
-  it('/subscribers/count (GET) deberia retornar el conteo de subscribers', async () => {
+  it('/subscribers/count (GET) should return the subscriber count', async () => {
     const res = await request(app.getHttpServer()).get('/subscribers/count');
     expect(res.status).toBe(200);
     expect(typeof res.body.data).toBe('number');
@@ -50,7 +50,7 @@ describe('SubscriberController (e2e)', (): void => {
 
   // ─── GET /subscribers/:id ────────────────────────────────────────────────────
 
-  it('/subscribers/:id (GET) subscriber existente', async () => {
+  it('/subscribers/:id (GET) existing subscriber', async () => {
     const id = '6833a1c9eb8534f065457118';
     const res = await request(app.getHttpServer()).get(`/subscribers/${id}`);
     if (res.status === 200) {
@@ -61,7 +61,7 @@ describe('SubscriberController (e2e)', (): void => {
     }
   });
 
-  it('/subscribers/:id (GET) deberia retornar 404 con id inexistente', async () => {
+  it('/subscribers/:id (GET) should return 404 for non-existent id', async () => {
     const res = await request(app.getHttpServer()).get(
       '/subscribers/000000000000000000000000',
     );
@@ -70,7 +70,7 @@ describe('SubscriberController (e2e)', (): void => {
 
   // ─── GET /subscribers/email/:email ───────────────────────────────────────────
 
-  it('/subscribers/email/:email (GET) buscar por email', async () => {
+  it('/subscribers/email/:email (GET) search by email', async () => {
     const email = 'test@example.com';
     const res = await request(app.getHttpServer()).get(
       `/subscribers/email/${email}`,
@@ -83,7 +83,7 @@ describe('SubscriberController (e2e)', (): void => {
 
   // ─── GET /subscribers/source/:source ─────────────────────────────────────────
 
-  it('/subscribers/source/:source (GET) buscar por source', async () => {
+  it('/subscribers/source/:source (GET) search by source', async () => {
     const source = 'web';
     const res = await request(app.getHttpServer()).get(
       `/subscribers/source/${source}`,
@@ -93,7 +93,7 @@ describe('SubscriberController (e2e)', (): void => {
 
   // ─── GET /subscribers/email/:email/source/:source ────────────────────────────
 
-  it('/subscribers/email/:email/source/:source (GET) buscar por email y source', async () => {
+  it('/subscribers/email/:email/source/:source (GET) search by email and source', async () => {
     const email = 'test@example.com';
     const source = 'web';
     const res = await request(app.getHttpServer()).get(
@@ -108,7 +108,7 @@ describe('SubscriberController (e2e)', (): void => {
 
   // ─── GET /subscribers/status/:status ─────────────────────────────────────────
 
-  it('/subscribers/status/:status (GET) buscar activos', async () => {
+  it('/subscribers/status/:status (GET) search active subscribers', async () => {
     const res = await request(app.getHttpServer()).get(
       '/subscribers/status/true',
     );
@@ -118,14 +118,14 @@ describe('SubscriberController (e2e)', (): void => {
     }
   });
 
-  it('/subscribers/status/:status (GET) buscar inactivos', async () => {
+  it('/subscribers/status/:status (GET) search inactive subscribers', async () => {
     const res = await request(app.getHttpServer()).get(
       '/subscribers/status/false',
     );
     expect([200, 404]).toContain(res.status);
   });
 
-  it('/subscribers/status/:status (GET) deberia soportar paginacion', async () => {
+  it('/subscribers/status/:status (GET) should support pagination', async () => {
     const res = await request(app.getHttpServer())
       .get('/subscribers/status/true')
       .query({ page: 1, limit: 5 });
@@ -137,7 +137,7 @@ describe('SubscriberController (e2e)', (): void => {
 
   // ─── POST /subscribers ───────────────────────────────────────────────────────
 
-  it('/subscribers (POST) deberia crear un subscriber valido', async () => {
+  it('/subscribers (POST) should create a valid subscriber', async () => {
     const dto = {
       name: 'Test User',
       email: `test-${Date.now()}@example.com`,
@@ -150,7 +150,7 @@ describe('SubscriberController (e2e)', (): void => {
     expect(res.body).toBeDefined();
   });
 
-  it('/subscribers (POST) deberia retornar 400 con dto invalido', async () => {
+  it('/subscribers (POST) should return 400 with invalid dto', async () => {
     const dto = {
       name: 'Sin email',
     };
@@ -160,7 +160,7 @@ describe('SubscriberController (e2e)', (): void => {
     expect(res.status).toBe(400);
   });
 
-  it('/subscribers (POST) deberia retornar 400 si el email ya existe', async () => {
+  it('/subscribers (POST) should return 400 if email already exists', async () => {
     const dto = {
       name: 'Test User',
       email: 'test@example.com',
@@ -174,7 +174,7 @@ describe('SubscriberController (e2e)', (): void => {
 
   // ─── PATCH /subscribers/:id ──────────────────────────────────────────────────
 
-  it('/subscribers/:id (PATCH) deberia actualizar un subscriber existente', async () => {
+  it('/subscribers/:id (PATCH) should update an existing subscriber', async () => {
     const id = '6833a1c9eb8534f065457118';
     const dto = {
       name: 'Updated Name',
@@ -187,7 +187,7 @@ describe('SubscriberController (e2e)', (): void => {
     expect([200, 404, 400]).toContain(res.status);
   });
 
-  it('/subscribers/:id (PATCH) deberia retornar 400 con dto invalido', async () => {
+  it('/subscribers/:id (PATCH) should return 400 with invalid dto', async () => {
     const id = '6833a1c9eb8534f065457118';
     const res = await request(app.getHttpServer())
       .patch(`/subscribers/${id}`)
@@ -197,7 +197,7 @@ describe('SubscriberController (e2e)', (): void => {
 
   // ─── GET /subscribers/unsubscribe/:email ─────────────────────────────────────
 
-  it('/subscribers/unsubscribe/:email (GET) deberia desuscribir un subscriber', async () => {
+  it('/subscribers/unsubscribe/:email (GET) should unsubscribe a subscriber', async () => {
     const email = 'test@example.com';
     const res = await request(app.getHttpServer()).get(
       `/subscribers/unsubscribe/${email}`,
@@ -207,7 +207,7 @@ describe('SubscriberController (e2e)', (): void => {
 
   // ─── DELETE /subscribers/:email ──────────────────────────────────────────────
 
-  it('/subscribers/:email (DELETE) deberia eliminar un subscriber', async () => {
+  it('/subscribers/:email (DELETE) should delete a subscriber', async () => {
     const email = 'test@example.com';
     const res = await request(app.getHttpServer()).delete(
       `/subscribers/${email}`,
@@ -215,7 +215,7 @@ describe('SubscriberController (e2e)', (): void => {
     expect([200, 404]).toContain(res.status);
   });
 
-  it('/subscribers/:email (DELETE) deberia retornar 404 con email inexistente', async () => {
+  it('/subscribers/:email (DELETE) should return 404 for non-existent email', async () => {
     const res = await request(app.getHttpServer()).delete(
       '/subscribers/noexiste@noexiste.com',
     );

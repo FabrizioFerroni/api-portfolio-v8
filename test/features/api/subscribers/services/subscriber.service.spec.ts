@@ -43,12 +43,12 @@ const mockTransform = {
   transformDtoObject: jest.fn(),
 };
 
-describe('SubscriberService', () => {
+describe('SubscriberService', (): void => {
   let service: SubscriberService;
   let subscriberRepo: ISubscriberRepository;
   let transform: TransformDto<SubscriberDocument, SubscriberResponseDto>;
 
-  beforeEach(async () => {
+  beforeEach(async (): Promise<void> => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SubscriberService,
@@ -66,11 +66,11 @@ describe('SubscriberService', () => {
       );
   });
 
-  afterEach(() => {
+  afterEach((): void => {
     jest.clearAllMocks();
   });
 
-  it('debería retornar todos los subscriptores paginados', async () => {
+  it('should return all subscribers paginated', async (): Promise<void> => {
     const mockDocs: SubscriberDocument[] = [
       { name: 'Fabri', email: 'test@mail.com', source: 'Test' } as any,
     ];
@@ -94,8 +94,8 @@ describe('SubscriberService', () => {
     expect(mockSubscriberRepo.findAllSubscribers).toHaveBeenCalledWith(0, 10);
   });
 
-  describe('findOneById', () => {
-    it('deberia retornar un subscriptor por su id', async () => {
+  describe('findOneById', (): void => {
+    it('should return a subscriber by id', async (): Promise<void> => {
       const id: string = new ObjectId().toString();
       const mockSub = { _id: id } as SubscriberDocument;
       const mockDto = { id: id } as unknown as SubscriberResponseDto;
@@ -108,7 +108,7 @@ describe('SubscriberService', () => {
 
       expect(response).toEqual(mockDto);
     });
-    it('deberia retornar un NotFound si se le pasa un id que no existe en la bd', async () => {
+    it('should throw NotFoundException for a non-existent id', async (): Promise<void> => {
       const fakeid: string = new ObjectId().toString();
       mockSubscriberRepo.findById.mockResolvedValue(null);
 
@@ -118,8 +118,8 @@ describe('SubscriberService', () => {
     });
   });
 
-  describe('createSubscriber', () => {
-    it('deberia crear un subscriber', async (): Promise<void> => {
+  describe('createSubscriber', (): void => {
+    it('should create a subscriber', async (): Promise<void> => {
       const dto: CreateSubcriberDto = {
         name: 'Test',
         email: 'test@example.com',
@@ -132,7 +132,7 @@ describe('SubscriberService', () => {
       expect(result).toBe(SubscriberOk.SUBSCRIBER_CREATED);
       expect(mockSubscriberRepo.createSubscriber).toHaveBeenCalled();
     });
-    it('deberia lanzar un error al no crear un subscriber', async (): Promise<void> => {
+    it('should throw an error when subscriber creation fails', async (): Promise<void> => {
       const dto: CreateSubcriberDto = {
         name: 'Test',
         email: 'test@example.com',
@@ -145,7 +145,7 @@ describe('SubscriberService', () => {
         new BadRequestException(SubscriberError.SUBSCRIBER_ERROR),
       );
     });
-    it('deberia lanzar excepcion si el subscriber ya existe', async (): Promise<void> => {
+    it('should throw an exception if the subscriber already exists', async (): Promise<void> => {
       const dto: CreateSubcriberDto = {
         name: 'Test',
         email: 'test@example.com',
@@ -164,14 +164,14 @@ describe('SubscriberService', () => {
       expect(mockSubscriberRepo.createSubscriber).not.toHaveBeenCalled();
     });
   });
-  describe('updateSubscriber', () => {
+  describe('updateSubscriber', (): void => {
     const id: string = new ObjectId().toString();
     const dto: UpdateSubscriberDto = {
       name: 'Test Updated',
       email: 'updated@example.com',
     };
 
-    it('deberia actualizar un subscriber exitosamente', async (): Promise<void> => {
+    it('should update a subscriber successfully', async (): Promise<void> => {
       mockSubscriberRepo.subscriptionAlredyExist.mockResolvedValue(false);
 
       mockSubscriberRepo.findById.mockResolvedValue({
@@ -193,7 +193,7 @@ describe('SubscriberService', () => {
       expect(mockSubscriberRepo.updateSubscriber).toHaveBeenCalledWith(id, dto);
     });
 
-    it('deberia lanzar excepcion si el email ya esta en uso', async (): Promise<void> => {
+    it('should throw an exception if the email is already in use', async (): Promise<void> => {
       mockSubscriberRepo.subscriptionAlredyExist.mockResolvedValue(true);
 
       await expect(service.updateSubscriber(id, dto)).rejects.toThrow(
@@ -204,7 +204,7 @@ describe('SubscriberService', () => {
       expect(mockSubscriberRepo.updateSubscriber).not.toHaveBeenCalled();
     });
 
-    it('deberia lanzar excepcion si el subscriber no existe', async (): Promise<void> => {
+    it('should throw an exception if the subscriber does not exist', async (): Promise<void> => {
       mockSubscriberRepo.subscriptionAlredyExist.mockResolvedValue(false);
       mockSubscriberRepo.findById.mockResolvedValue(null);
 
@@ -215,7 +215,7 @@ describe('SubscriberService', () => {
       expect(mockSubscriberRepo.updateSubscriber).not.toHaveBeenCalled();
     });
 
-    it('deberia lanzar excepcion si el update falla', async (): Promise<void> => {
+    it('should throw an exception if the update fails', async (): Promise<void> => {
       mockSubscriberRepo.subscriptionAlredyExist.mockResolvedValue(false);
       mockSubscriberRepo.findById.mockResolvedValue({ id, ...dto } as any);
       mockSubscriberRepo.updateSubscriber.mockResolvedValue(null);
@@ -225,7 +225,7 @@ describe('SubscriberService', () => {
       );
     });
 
-    it('deberia ignorar campos undefined o null en el dto', async (): Promise<void> => {
+    it('should ignore undefined or null fields in the dto', async (): Promise<void> => {
       const dtoWithNulls: UpdateSubscriberDto = {
         name: 'Test Updated',
         email: undefined,
@@ -257,7 +257,7 @@ describe('SubscriberService', () => {
       status: true,
     };
 
-    it('deberia desuscribir un subscriber exitosamente', async (): Promise<void> => {
+    it('should unsubscribe a subscriber successfully', async (): Promise<void> => {
       mockSubscriberRepo.findByEmail.mockResolvedValue(mockSubscriber as any);
       mockSubscriberRepo.updateSubscriber.mockResolvedValue({
         ...mockSubscriber,
@@ -273,7 +273,7 @@ describe('SubscriberService', () => {
       });
     });
 
-    it('deberia lanzar excepcion si el subscriber no existe', async (): Promise<void> => {
+    it('should throw an exception if the subscriber does not exist', async (): Promise<void> => {
       mockSubscriberRepo.findByEmail.mockResolvedValue(null);
 
       await expect(service.unsubscribeSubscriber(email)).rejects.toThrow(
@@ -285,7 +285,7 @@ describe('SubscriberService', () => {
       expect(mockSubscriberRepo.updateSubscriber).not.toHaveBeenCalled();
     });
 
-    it('deberia lanzar excepcion si el subscriber ya esta desuscripto', async (): Promise<void> => {
+    it('should throw an exception if the subscriber is already unsubscribed', async (): Promise<void> => {
       mockSubscriberRepo.findByEmail.mockResolvedValue({
         ...mockSubscriber,
         status: false,
@@ -298,7 +298,7 @@ describe('SubscriberService', () => {
       expect(mockSubscriberRepo.updateSubscriber).not.toHaveBeenCalled();
     });
 
-    it('deberia lanzar excepcion si el update falla', async (): Promise<void> => {
+    it('should throw an exception if the update fails', async (): Promise<void> => {
       mockSubscriberRepo.findByEmail.mockResolvedValue(mockSubscriber as any);
       mockSubscriberRepo.updateSubscriber.mockResolvedValue(null);
 
@@ -317,7 +317,7 @@ describe('SubscriberService', () => {
       status: true,
     };
 
-    it('deberia eliminar un subscriber exitosamente', async (): Promise<void> => {
+    it('should delete a subscriber successfully', async (): Promise<void> => {
       mockSubscriberRepo.findByEmail.mockResolvedValue(mockSubscriber as any);
       mockSubscriberRepo.deleteSubscriber.mockResolvedValue(true);
 
@@ -328,7 +328,7 @@ describe('SubscriberService', () => {
       expect(mockSubscriberRepo.deleteSubscriber).toHaveBeenCalledWith(email);
     });
 
-    it('deberia lanzar excepcion si el subscriber no existe', async (): Promise<void> => {
+    it('should throw an exception if the subscriber does not exist', async (): Promise<void> => {
       mockSubscriberRepo.findByEmail.mockResolvedValue(null);
 
       await expect(service.deleteSubscriber(email)).rejects.toThrow(
@@ -340,7 +340,7 @@ describe('SubscriberService', () => {
       expect(mockSubscriberRepo.deleteSubscriber).not.toHaveBeenCalled();
     });
 
-    it('deberia lanzar excepcion si el delete falla', async (): Promise<void> => {
+    it('should throw an exception if the delete fail', async (): Promise<void> => {
       mockSubscriberRepo.findByEmail.mockResolvedValue(mockSubscriber as any);
       mockSubscriberRepo.deleteSubscriber.mockResolvedValue(false);
 
@@ -350,7 +350,7 @@ describe('SubscriberService', () => {
     });
   });
   describe('countSubscribers', (): void => {
-    it('deberia retornar el conteo de subscribers', async (): Promise<void> => {
+    it('should return the subscriber count', async (): Promise<void> => {
       mockSubscriberRepo.countSubscribers.mockResolvedValue(10);
 
       const result: number = await service.countSubscribers();
@@ -359,7 +359,7 @@ describe('SubscriberService', () => {
       expect(mockSubscriberRepo.countSubscribers).toHaveBeenCalled();
     });
 
-    it('deberia retornar 0 si no hay subscribers', async (): Promise<void> => {
+    it('should return 0 if there are no subscribers', async (): Promise<void> => {
       mockSubscriberRepo.countSubscribers.mockResolvedValue(0);
 
       const result: number = await service.countSubscribers();
