@@ -1,6 +1,6 @@
 import { configApp } from '@/config/app/config.app';
 import { InjectMailer, Mailer, MailerModule } from 'nestjs-mailer';
-import { Module, OnModuleInit } from '@nestjs/common';
+import { Logger, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MailQeueService } from './service/mail-qeue.service';
 import { parseSafeArray } from '@/shared/utils/functions/parseArray';
@@ -29,6 +29,9 @@ import { parseSafeArray } from '@/shared/utils/functions/parseArray';
   exports: [MailQeueService],
 })
 export class MailModule implements OnModuleInit {
+  private readonly logger: Logger = new Logger(MailModule.name, {
+    timestamp: true,
+  });
   constructor(
     @InjectMailer()
     private readonly mailer: Mailer,
@@ -36,7 +39,7 @@ export class MailModule implements OnModuleInit {
     private readonly configService: ConfigService,
   ) {}
 
-  async onModuleInit() {
+  async onModuleInit(): Promise<void> {
     const colasString: string =
       this.configService.get<string>('RABBITMQ_COLAS');
     let colas: string[] = [];
@@ -44,7 +47,7 @@ export class MailModule implements OnModuleInit {
     try {
       colas = parseSafeArray(colasString);
     } catch (e) {
-      console.error('❌ Error parseando colas:', e);
+      this.logger.error('❌ Error parseando colas:', e);
     }
 
     if (Array.isArray(colas)) {
@@ -55,7 +58,7 @@ export class MailModule implements OnModuleInit {
         });
       }
     } else {
-      console.error('❌ Colas no es un array válido:', colas);
+      this.logger.error('❌ Colas no es un array válido:', colas);
     }
   }
 }

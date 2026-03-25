@@ -1,6 +1,18 @@
 import { parseSafeArray } from '@/shared/utils/functions/parseArray';
 
 describe('parseSafeArray', () => {
+  let consoleSpy: jest.SpyInstance;
+
+  beforeEach((): void => {
+    consoleSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation((): void => {});
+  });
+
+  afterEach((): void => {
+    consoleSpy.mockRestore();
+  });
+
   it('debe devolver un array vacío si el valor es undefined', () => {
     expect(parseSafeArray(undefined)).toEqual([]);
   });
@@ -22,6 +34,10 @@ describe('parseSafeArray', () => {
 
   it('debe lanzar un error si el contenido no es JSON válido', () => {
     const input = 'no_es_un_json';
-    expect(() => parseSafeArray(input)).toThrow();
+    expect((): string[] => parseSafeArray(input)).toThrow();
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Error parsing RABBITMQ_COLAS:',
+      input,
+    );
   });
 });
