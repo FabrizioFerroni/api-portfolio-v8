@@ -29,7 +29,7 @@ import { parseSafeArray } from '@/shared/utils/functions/parseArray';
   exports: [MailQeueService],
 })
 export class MailModule implements OnModuleInit {
-  private readonly logger = new Logger(MailModule.name, {
+  private readonly logger: Logger = new Logger(MailModule.name, {
     timestamp: true,
   });
   constructor(
@@ -39,7 +39,7 @@ export class MailModule implements OnModuleInit {
     private readonly configService: ConfigService,
   ) {}
 
-  async onModuleInit() {
+  async onModuleInit(): Promise<void> {
     const colasString: string =
       this.configService.get<string>('RABBITMQ_COLAS');
     let colas: string[] = [];
@@ -47,7 +47,7 @@ export class MailModule implements OnModuleInit {
     try {
       colas = parseSafeArray(colasString);
     } catch (e) {
-      console.error('❌ Error parseando colas:', e);
+      this.logger.error('❌ Error parseando colas:', e);
     }
 
     if (Array.isArray(colas)) {
@@ -58,27 +58,7 @@ export class MailModule implements OnModuleInit {
         });
       }
     } else {
-      console.error('❌ Colas no es un array válido:', colas);
+      this.logger.error('❌ Colas no es un array válido:', colas);
     }
   }
-
-  /*async onModuleDestroy() {
-    this.logger.log('Cerrando conexión a RabbitMQ...');
-    try {
-      await this.channel.close();
-    } catch (err) {
-      this.logger.warn(
-        'Canal ya cerrado o error al cerrar canal:',
-        err?.message,
-      );
-    }
-    try {
-      await this.connection.close();
-    } catch (err) {
-      this.logger.warn(
-        'Conexión ya cerrada o error al cerrar conexión:',
-        err?.message,
-      );
-    }
-  }*/
 }
