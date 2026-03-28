@@ -112,7 +112,6 @@ export class ContactService {
     }
 
     const sendContact = await this.sendMailOrder(dto);
-
     if (!sendContact) {
       throw new BadRequestException(ContactError.CONTACT_ERROR);
     }
@@ -148,6 +147,7 @@ export class ContactService {
     };
 
     const queue = 'send_contact';
+
     const result = await this.mailQeueService.sendEmailQueue({
       message,
       queue: queue,

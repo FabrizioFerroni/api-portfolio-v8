@@ -129,8 +129,8 @@ describe('ContactService', () => {
       const result = await service.createContact(dto);
 
       expect(result).toBe(ContactOk.CONTACT_SEND);
-      expect(mockMailQueueService.sendEmailQueue).toHaveBeenCalled();
       expect(mockContactRepo.createContact).toHaveBeenCalled();
+      expect(mockMailQueueService.sendEmailQueue).toHaveBeenCalled();
     });
 
     it('debería lanzar error si falla envío de correo', async () => {
