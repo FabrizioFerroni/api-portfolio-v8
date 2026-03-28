@@ -12,6 +12,7 @@ import { ConfirmChannel, ConsumeMessage } from 'amqplib';
 import { MessageQueue, MessageRabbit } from '../types/message.type';
 import { SendQueue } from '../types/send-qeue';
 import { templateToSend } from '../templates/templates';
+import { configApp } from '@/config/app/config.app';
 
 @Injectable()
 export class MailQeueService implements OnModuleInit, OnModuleDestroy {
@@ -73,16 +74,23 @@ export class MailQeueService implements OnModuleInit, OnModuleDestroy {
     key: exchange,
   }: SendQueue<MessageQueue>): Promise<boolean> {
     try {
-      await this.channel.publish(
-        exchange,
-        routing,
-        Buffer.from(JSON.stringify(message)),
-        { persistent: true },
-      );
-      this.logger.log(
-        `Mensaje enviado a exchange "${exchange}" y routing "${routing}"`,
-      );
-      return true;
+      if (configApp().env !== 'test') {
+        await this.channel.publish(
+          exchange,
+          routing,
+          Buffer.from(JSON.stringify(message)),
+          { persistent: true },
+        );
+        this.logger.log(
+          `Mensaje enviado a exchange "${exchange}" y routing "${routing}"`,
+        );
+        return true;
+      } else {
+        this.logger.log(
+          'Se salta envio de correo ya que es un metodo de prueba',
+        );
+        return true;
+      }
     } catch (err) {
       this.logger.error('Error enviando mensaje a RabbitMQ:', err);
       return false;

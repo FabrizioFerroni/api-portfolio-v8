@@ -140,9 +140,6 @@ describe('ExperienceController (e2e)', (): void => {
         skills: ['nestjs', 'mongodb', 'typescript', 'docker'],
       });
 
-    /* console.log(
-      `Resultado para cuando un id no existe:\n${JSON.stringify(res, null, 2)}`,
-    ); */
     expect(res.status).toBe(404);
     expect(res.body.message.message).toBe(ExperienceError.EXPERIENCE_NOT_FOUND);
   });
@@ -160,9 +157,6 @@ describe('ExperienceController (e2e)', (): void => {
         skills: ['nestjs', 'mongodb', 'typescript', 'docker'],
       });
 
-    /* console.log(
-      `Resultado para cuando un id duplicado:\n${JSON.stringify(res, null, 2)}`,
-    ); */
     expect(res.status).toBe(400);
     expect(res.body.message.message).toBe(
       ExperienceError.EXPERIENCE_ALREADY_EXIST,

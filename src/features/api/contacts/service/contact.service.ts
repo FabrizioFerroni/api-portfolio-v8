@@ -111,11 +111,9 @@ export class ContactService {
       if (dto[key] ?? false) newContact[key] = dto[key];
     }
 
-    if (configApp().env !== 'test') {
-      const sendContact = await this.sendMailOrder(dto);
-      if (!sendContact) {
-        throw new BadRequestException(ContactError.CONTACT_ERROR);
-      }
+    const sendContact = await this.sendMailOrder(dto);
+    if (!sendContact) {
+      throw new BadRequestException(ContactError.CONTACT_ERROR);
     }
 
     const result: Contact = await this.contactRepo.createContact(
@@ -149,6 +147,7 @@ export class ContactService {
     };
 
     const queue = 'send_contact';
+
     const result = await this.mailQeueService.sendEmailQueue({
       message,
       queue: queue,
