@@ -10,12 +10,13 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { Error as MongooseError } from 'mongoose';
 
 @Catch()
 export class CustomExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(CustomExceptionFilter.name);
 
-  catch(exception: HttpException, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request = ctx.getRequest();
@@ -52,35 +53,49 @@ export class CustomExceptionFilter implements ExceptionFilter {
       };
 
       return response.status(status).json(body);
-    } else {
-      this.logger.error(exception);
+    }
 
-      let rsp: ModelResponseError = {
-        statusCode: 0,
-        message: '',
-        messageServer: null,
-        timestamp: '',
-        path: '',
+    // CastError de Mongoose → ObjectId malformado → 400
+    if (exception instanceof MongooseError.CastError) {
+      const body = {
+        messageException: getHttpStatusMessage(HttpStatus.BAD_REQUEST),
+        message: `Invalid id format: ${exception.value}`,
+        path: request.url,
+        status_code: HttpStatus.BAD_REQUEST,
+        timestamp: new Date().toISOString(),
       };
 
-      if (process.env.NODE_ENV === 'development') {
-        rsp = {
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: getHttpStatusMessage(HttpStatus.INTERNAL_SERVER_ERROR),
-          messageServer: exception,
-          timestamp: new Date().toISOString(),
-          path: request.url,
-        };
-      } else {
-        rsp = {
-          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-          message: MessagesError.INTERNAL_EXCEPTION,
-          timestamp: new Date().toISOString(),
-          path: request.url,
-        };
-      }
-
-      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json(rsp);
+      return response.status(HttpStatus.BAD_REQUEST).json(body);
     }
+
+    // Cualquier otro error no controlado
+    this.logger.error(exception);
+
+    let rsp: ModelResponseError = {
+      statusCode: 0,
+      message: '',
+      messageServer: '',
+      timestamp: '',
+      path: '',
+    };
+
+    if (process.env.NODE_ENV === 'development') {
+      rsp = {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: getHttpStatusMessage(HttpStatus.INTERNAL_SERVER_ERROR),
+        messageServer: exception.toString(),
+        timestamp: new Date().toISOString(),
+        path: request.url,
+      };
+    } else {
+      rsp = {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: MessagesError.INTERNAL_EXCEPTION,
+        timestamp: new Date().toISOString(),
+        path: request.url,
+      };
+    }
+
+    return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json(rsp);
   }
 }
