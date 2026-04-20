@@ -5,6 +5,7 @@ import { configApp } from './config/app/config.app';
 import { setupSwagger } from './config/swagger/config.swagger.app';
 import { configStrings } from './config/app/config.string';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
   /* const app = await NestFactory.create(AppModule); */
@@ -48,6 +49,10 @@ async function bootstrap() {
       },
     }),
   );
+
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
+    prefix: '/file',
+  });
 
   app.setGlobalPrefix(configStrings().apiVersion, {
     exclude: [

@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { configApp } from '../app/config.app';
-import BDFileLogs from '../logger/BDFileLog';
 import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({

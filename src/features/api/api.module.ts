@@ -4,6 +4,7 @@ import { AuditsModule } from './audits/audits.module';
 import { ContactsModule } from './contacts/contacts.module';
 import { SubscribersModule } from './subscribers/subscribers.module';
 import { ExperienceModule } from '@/features/api/experiences/experience.module';
+import { ProjectModule } from './projects/projects.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { ExperienceModule } from '@/features/api/experiences/experience.module';
     SubscribersModule,
     ExperienceModule,
     UserModule,
+    ProjectModule,
   ],
   exports: [
     AuditsModule,
@@ -19,6 +21,7 @@ import { ExperienceModule } from '@/features/api/experiences/experience.module';
     SubscribersModule,
     ExperienceModule,
     UserModule,
+    ProjectModule,
   ],
 })
 export class ApiModule {}
