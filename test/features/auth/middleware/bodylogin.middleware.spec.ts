@@ -1,8 +1,8 @@
-import { BodyloginMiddleware } from '@/features/auth/middleware/bodylogin.middleware';
+import { BodyAuthMiddleware } from '@/features/auth/middleware/bodyauth.middleware';
 import { DecryptCredentialsService } from '@/features/auth/services/decryptcredentials.service';
 
 describe('BodyloginMiddleware', () => {
-  let middleware: BodyloginMiddleware;
+  let middleware: BodyAuthMiddleware;
   let decryptService: DecryptCredentialsService;
 
   const mockDecryptService = {
@@ -11,7 +11,7 @@ describe('BodyloginMiddleware', () => {
 
   beforeEach(() => {
     decryptService = mockDecryptService as any;
-    middleware = new BodyloginMiddleware(decryptService);
+    middleware = new BodyAuthMiddleware(decryptService);
   });
 
   it('should return 400 if "basic" header is missing', () => {

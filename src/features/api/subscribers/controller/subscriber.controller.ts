@@ -20,6 +20,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiQuery,
+  ApiSecurity,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -31,6 +32,7 @@ import { CreateResponseDto } from '@/shared/utils/dtos/swagger/createresponse.dt
 import { CreateSubcriberDto } from '../dto/create-subcriber.dto';
 import { SubscriberResponseDto } from '@/features/api/subscribers/dto/response/subscriber.response.dto';
 import { PaginationMeta } from '@/core/interfaces/pagination-meta.interface';
+import { ApiKeyLogin } from '@/features/auth/decorators/apikey.decorator';
 
 @Controller('subscribers')
 @ApiTags('Subscriptores')
@@ -63,6 +65,8 @@ export class SubscriberController {
   @ApiQuery({ name: 'page', type: 'number', required: false })
   @ApiQuery({ name: 'limit', type: 'number', required: false })
   @ApiOperation({ summary: 'Get all subscriptors' })
+  @Authorize()
+  @ApiBearerAuth()
   async getAllSubscribers(
     @Query() param: PaginationDto,
   ): Promise<{ subscribers: SubscriberResponseDto[]; meta: PaginationMeta }> {
@@ -91,6 +95,8 @@ export class SubscriberController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Get count of all subscriptors' })
+  @Authorize()
+  @ApiBearerAuth()
   async getCountSubscribers(): Promise<number> {
     return await this.subscriberService.countSubscribers();
   }
@@ -122,6 +128,8 @@ export class SubscriberController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Get subscriptor by id' })
+  @Authorize()
+  @ApiBearerAuth()
   async getSubscriberById(
     @Param('id') id: string,
   ): Promise<SubscriberResponseDto> {
@@ -155,6 +163,8 @@ export class SubscriberController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Get subscriptor by email' })
+  @Authorize()
+  @ApiBearerAuth()
   async getSubscriberByEmail(
     @Param('email') email: string,
   ): Promise<SubscriberResponseDto> {
@@ -188,6 +198,8 @@ export class SubscriberController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Get subscriptor by source' })
+  @Authorize()
+  @ApiBearerAuth()
   async getSubscriberBySource(
     @Param('source') source: string,
   ): Promise<SubscriberResponseDto> {
@@ -221,6 +233,8 @@ export class SubscriberController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Get subscriptor by email and source' })
+  @Authorize()
+  @ApiBearerAuth()
   async getSubscriberByEmailAndSource(
     @Param('email') email: string,
     @Param('source') source: string,
@@ -257,6 +271,8 @@ export class SubscriberController {
   @ApiQuery({ name: 'page', type: 'number', required: false })
   @ApiQuery({ name: 'limit', type: 'number', required: false })
   @ApiOperation({ summary: 'Get subscriptors by status' })
+  @Authorize()
+  @ApiBearerAuth()
   async getSubscribersByStatus(
     @Param('status') status: string,
     @Query() param: PaginationDto,
@@ -286,6 +302,8 @@ export class SubscriberController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Create a new subscriptor' })
+  @ApiSecurity('api-key')
+  @ApiKeyLogin()
   async createSubscriber(@Body() data: CreateSubcriberDto): Promise<string> {
     return await this.subscriberService.createSubscriber(data);
   }
@@ -317,6 +335,8 @@ export class SubscriberController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Update a subscriptor by id' })
+  @Authorize()
+  @ApiBearerAuth()
   async updateSubscriber(
     @Param('id') id: string,
     @Body() data: CreateSubcriberDto,
@@ -352,6 +372,8 @@ export class SubscriberController {
   })
   @ApiOperation({ summary: 'Unsubscribe a subscriptor by email' })
   @HttpCode(HttpStatus.OK)
+  @ApiSecurity('api-key')
+  @ApiKeyLogin()
   async unsubscribe(@Param('email') email: string): Promise<string> {
     return this.subscriberService.unsubscribeSubscriber(email);
   }
@@ -383,6 +405,8 @@ export class SubscriberController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Delete a subscriptor by email' })
+  @Authorize()
+  @ApiBearerAuth()
   async deleteSubscriber(@Param('email') email: string): Promise<string> {
     return this.subscriberService.deleteSubscriber(email);
   }

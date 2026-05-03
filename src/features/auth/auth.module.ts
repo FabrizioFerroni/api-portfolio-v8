@@ -17,7 +17,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { ApiKeyStrategy } from './strategies/api-key.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { AuthController } from './controller/auth.controller';
-import { BodyloginMiddleware } from './middleware/bodylogin.middleware';
+import { BodyAuthMiddleware } from './middleware/bodyauth.middleware';
 import { DecryptCredentialService } from '@/core/services/decrypt-credential.service';
 import { DecryptCredentialsService } from './services/decryptcredentials.service';
 import { SharedModule } from '@/shared/shared.module';
@@ -47,7 +47,10 @@ import { SharedModule } from '@/shared/shared.module';
 export class AuthModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(BodyloginMiddleware)
-      .forRoutes({ path: 'auth/login', method: RequestMethod.POST });
+      .apply(BodyAuthMiddleware)
+      .forRoutes(
+        { path: 'auth/login', method: RequestMethod.POST },
+        { path: 'auth/refresh', method: RequestMethod.POST },
+      );
   }
 }
