@@ -3,15 +3,21 @@ import { OkResponseDto } from '@/shared/utils/dtos/swagger/okresponse.dto';
 import { Controller, Get, Param } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { AuditService } from '../service/audit.service';
+import { Authorize } from '@/features/auth/decorators/authorized.decorators';
 
 @Controller('audits')
+@ApiTags('Auditorias')
+@Authorize()
+@ApiBearerAuth()
 export class AuditsController {
   constructor(private readonly auditService: AuditService) {}
 

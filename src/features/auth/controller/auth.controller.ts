@@ -27,9 +27,10 @@ import { Authorize } from '../decorators/authorized.decorators';
 import { User } from '../decorators/user.decorator';
 import { UserService } from '@/features/api/user/service/user.service';
 import { RefreshtokenDto } from '../dtos/refresh-token.dto';
+import { Public } from '../decorators/public.decorator';
 
 @Controller('auth')
-@ApiTags('Auth')
+@ApiTags('Autenticacion de usuario')
 @UseInterceptors(ClassSerializerInterceptor)
 export class AuthController {
   constructor(
@@ -104,8 +105,7 @@ export class AuthController {
     description: 'Hubo un error interno en el servidor',
   })
   @HttpCode(HttpStatus.OK)
-  @Authorize()
-  @ApiBearerAuth()
+  @Public()
   refreshToken(@Body() dto: RefreshtokenDto) {
     return this.authService.refresh(dto);
   }

@@ -28,6 +28,14 @@ export const setupSwagger = (app: INestApplication, entorno: string) => {
         'Ingresar token Bearer para el inicio de sesión del proyecto',
       name: 'Portfolio v8',
     })
+    .addApiKey(
+      {
+        type: 'apiKey',
+        in: 'header',
+        name: 'x-api-key', // el nombre real del header
+      },
+      'api-key', // nombre del esquema (referencia interna)
+    )
     .build();
 
   if (entorno !== 'production') {

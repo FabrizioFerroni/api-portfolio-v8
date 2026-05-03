@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { DecryptCredentialsService } from '../services/decryptcredentials.service';
 
 @Injectable()
-export class BodyloginMiddleware implements NestMiddleware {
+export class BodyAuthMiddleware implements NestMiddleware {
   constructor(
     private readonly decryptCredentialService: DecryptCredentialsService,
   ) {}

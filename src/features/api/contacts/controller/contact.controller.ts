@@ -11,12 +11,15 @@ import {
 import { ContactService } from '../service/contact.service';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiQuery,
+  ApiSecurity,
+  ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { OkResponseDto } from '@/shared/utils/dtos/swagger/okresponse.dto';
@@ -25,8 +28,11 @@ import { CreateResponseDto } from '@/shared/utils/dtos/swagger/createresponse.dt
 import { SendContactDto } from '../dto/send-contact.dto';
 import { clearScreenDown } from 'readline';
 import { PaginationDto } from '@/shared/utils/dtos/pagination.dto';
+import { Authorize } from '@/features/auth/decorators/authorized.decorators';
+import { ApiKeyLogin } from '@/features/auth/decorators/apikey.decorator';
 
 @Controller('contact')
+@ApiTags('Contactos')
 export class ContactController {
   constructor(private readonly contactService: ContactService) {}
 
@@ -54,6 +60,8 @@ export class ContactController {
   @ApiQuery({ name: 'page', type: 'number', required: false })
   @ApiQuery({ name: 'limit', type: 'number', required: false })
   @ApiOperation({ summary: 'Get all contacts' })
+  @Authorize()
+  @ApiBearerAuth()
   async getAllContacts(@Query() param: PaginationDto) {
     return await this.contactService.getAllContacts(param);
   }
@@ -85,6 +93,8 @@ export class ContactController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Get contact by id' })
+  @Authorize()
+  @ApiBearerAuth()
   async findOneID(@Param('id') id: string) {
     return await this.contactService.findOneId(id);
   }
@@ -116,6 +126,8 @@ export class ContactController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Get contact by email' })
+  @Authorize()
+  @ApiBearerAuth()
   async findOneEmail(@Param('email') email: string) {
     return await this.contactService.findOneEmail(email);
   }
@@ -147,6 +159,8 @@ export class ContactController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Get all contacts by email' })
+  @Authorize()
+  @ApiBearerAuth()
   async getAllContatsEmail(@Param('email') email: string) {
     return await this.contactService.getAllContactsEmail(email);
   }
@@ -178,6 +192,8 @@ export class ContactController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Get contact by subject' })
+  @Authorize()
+  @ApiBearerAuth()
   async findOneSubject(@Param('subject') subject: string) {
     return await this.contactService.findOneSubject(subject);
   }
@@ -209,6 +225,8 @@ export class ContactController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Get all contacts by subject' })
+  @Authorize()
+  @ApiBearerAuth()
   async getAllContatsSubject(@Param('subject') subject: string) {
     return await this.contactService.getAllContactsSubject(subject);
   }
@@ -236,6 +254,8 @@ export class ContactController {
   })
   @ApiOperation({ summary: 'Send contact to mail and save in database' })
   @HttpCode(HttpStatus.OK)
+  @ApiSecurity('api-key')
+  @ApiKeyLogin()
   create(@Body() dto: SendContactDto) {
     return this.contactService.createContact(dto);
   }

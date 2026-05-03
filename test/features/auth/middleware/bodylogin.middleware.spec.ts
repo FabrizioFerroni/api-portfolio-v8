@@ -1,4 +1,4 @@
-import { BodyloginMiddleware } from '@/features/auth/middleware/bodylogin.middleware';
+import { BodyloginMiddleware } from '@/features/auth/middleware/bodyauth.middleware';
 import { DecryptCredentialsService } from '@/features/auth/services/decryptcredentials.service';
 
 describe('BodyloginMiddleware', () => {

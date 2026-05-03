@@ -14,18 +14,24 @@ import { UserService } from '../service/user.service';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { ErrorResponseDto } from '@/shared/utils/dtos/swagger/errorresponse.dto';
 import { OkResponseDto } from '@/shared/utils/dtos/swagger/okresponse.dto';
 import { CreateResponseDto } from '@/shared/utils/dtos/swagger/createresponse.dto';
+import { Authorize } from '@/features/auth/decorators/authorized.decorators';
 
 @Controller('users')
+@ApiTags('Usuario')
+@Authorize()
+@ApiBearerAuth()
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -90,7 +96,7 @@ export class UserController {
   @ApiOkResponse({
     type: OkResponseDto,
     isArray: false,
-    description: 'Get user by id',
+    description: 'Get user by email',
   })
   @ApiBadRequestResponse({
     type: ErrorResponseDto,
@@ -112,7 +118,7 @@ export class UserController {
     isArray: false,
     description: 'Internal Server Error',
   })
-  @ApiOperation({ summary: 'Get user by id' })
+  @ApiOperation({ summary: 'Get user by email' })
   async findOneEmail(@Param('email') email: string) {
     return await this.userService.findByEmail(email);
   }

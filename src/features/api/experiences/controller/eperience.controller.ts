@@ -10,11 +10,13 @@ import {
 import { ExperienceService } from '@/features/api/experiences/service/experience.service';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiSecurity,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -23,6 +25,8 @@ import { ErrorResponseDto } from '@utils/dtos/swagger/errorresponse.dto';
 import { CreateResponseDto } from '@utils/dtos/swagger/createresponse.dto';
 import { CreateNewExperienceDto } from '@/features/api/experiences/dtos/create.dto';
 import { UpdateExperienceDto } from '@/features/api/experiences/dtos/update.dto';
+import { Authorize } from '@/features/auth/decorators/authorized.decorators';
+import { ApiKeyLogin } from '@/features/auth/decorators/apikey.decorator';
 
 @Controller('experiences')
 @ApiTags('Experiencias laborales')
@@ -53,6 +57,8 @@ export class ExperienceController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Get all experiences' })
+  @ApiSecurity('api-key')
+  @ApiKeyLogin()
   async getAllExperiences() {
     return await this.experienceService.getAllExperiences();
   }
@@ -84,6 +90,8 @@ export class ExperienceController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Get experience by id' })
+  @Authorize()
+  @ApiBearerAuth()
   async getExperienceById(@Param('id') id: string) {
     return await this.experienceService.getExperienceById(id);
   }
@@ -110,6 +118,8 @@ export class ExperienceController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Create a new experience' })
+  @Authorize()
+  @ApiBearerAuth()
   createExperience(@Body() dto: CreateNewExperienceDto) {
     return this.experienceService.createNewExp(dto);
   }
@@ -141,6 +151,8 @@ export class ExperienceController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Update an experience by id' })
+  @Authorize()
+  @ApiBearerAuth()
   async updateExperience(
     @Param('id') id: string,
     @Body() dto: UpdateExperienceDto,
@@ -175,6 +187,8 @@ export class ExperienceController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Delete an experience by id' })
+  @Authorize()
+  @ApiBearerAuth()
   async deleteExperience(@Param('id') id: string) {
     return await this.experienceService.deleteExperience(id);
   }
