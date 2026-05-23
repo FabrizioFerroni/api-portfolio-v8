@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -17,6 +18,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
   ApiSecurity,
   ApiTags,
   ApiUnauthorizedResponse,
@@ -33,12 +35,14 @@ import { ErrorResponseDto } from '@/shared/utils/dtos/swagger/errorresponse.dto'
 import { OkResponseDto } from '@/shared/utils/dtos/swagger/okresponse.dto';
 import { CreateResponseDto } from '@/shared/utils/dtos/swagger/createresponse.dto';
 import { ApiKeyLogin } from '@/features/auth/decorators/apikey.decorator';
+import { PaginationDto } from '@/shared/utils/dtos/pagination.dto';
 
 @Controller('projects')
 @ApiTags('Projectos Personales')
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
+  //FIXME: Agregar paginación para frontend
   @Get()
   @ApiOkResponse({
     type: OkResponseDto,
@@ -65,6 +69,65 @@ export class ProjectController {
   @ApiKeyLogin()
   async getAllProjects() {
     return await this.projectService.getAllProyects();
+  }
+
+  @Get('admin')
+  @ApiOkResponse({
+    type: OkResponseDto,
+    isArray: false,
+    description: 'Get all projects',
+  })
+  @ApiBadRequestResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Bad Request',
+  })
+  @ApiUnauthorizedResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Unauthorized',
+  })
+  @ApiInternalServerErrorResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Internal Server Error',
+  })
+  @ApiQuery({ name: 'page', type: 'number', required: false })
+  @ApiQuery({ name: 'limit', type: 'number', required: false })
+  @ApiQuery({ name: 'search', type: 'string', required: false })
+  @ApiOperation({ summary: 'Get all projects' })
+  @Authorize()
+  @ApiBearerAuth()
+  async getAllProjectsAdmin(@Query() param: PaginationDto) {
+    return await this.projectService.getAllProyectsAdmin(param);
+  }
+
+  @Get('stats')
+  @ApiOkResponse({
+    type: OkResponseDto,
+    isArray: false,
+    description: 'Get all projects stats',
+  })
+  @ApiBadRequestResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Bad Request',
+  })
+  @ApiUnauthorizedResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Unauthorized',
+  })
+  @ApiInternalServerErrorResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Internal Server Error',
+  })
+  @ApiOperation({ summary: 'Get all projects stats' })
+  @Authorize()
+  @ApiBearerAuth()
+  async getAllProjectsStats() {
+    return await this.projectService.getStats();
   }
 
   @Get(':slug')

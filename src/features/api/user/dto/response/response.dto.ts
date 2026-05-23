@@ -21,6 +21,12 @@ export class UserResponseDto {
   avatar: string;
 
   @Exclude()
+  imagePath: string;
+
+  @Exclude()
+  imageUrl: string;
+
+  @Exclude()
   createdAt: Date;
 
   @Exclude()

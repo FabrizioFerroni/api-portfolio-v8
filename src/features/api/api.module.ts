@@ -5,6 +5,8 @@ import { ContactsModule } from './contacts/contacts.module';
 import { SubscribersModule } from './subscribers/subscribers.module';
 import { ExperienceModule } from '@/features/api/experiences/experience.module';
 import { ProjectModule } from './projects/projects.module';
+import { SettingsModule } from './settings/settings.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import { ProjectModule } from './projects/projects.module';
     ExperienceModule,
     UserModule,
     ProjectModule,
+    SettingsModule,
+    DashboardModule,
   ],
   exports: [
     AuditsModule,
@@ -22,6 +26,8 @@ import { ProjectModule } from './projects/projects.module';
     ExperienceModule,
     UserModule,
     ProjectModule,
+    SettingsModule,
+    DashboardModule,
   ],
 })
 export class ApiModule {}

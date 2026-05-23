@@ -1,4 +1,3 @@
-import { configApp } from '@/config/app/config.app';
 import {
   MiddlewareConsumer,
   Module,
@@ -18,7 +17,6 @@ import { ApiKeyStrategy } from './strategies/api-key.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { AuthController } from './controller/auth.controller';
 import { BodyAuthMiddleware } from './middleware/bodyauth.middleware';
-import { DecryptCredentialService } from '@/core/services/decrypt-credential.service';
 import { DecryptCredentialsService } from './services/decryptcredentials.service';
 import { SharedModule } from '@/shared/shared.module';
 

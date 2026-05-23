@@ -10,6 +10,12 @@ import { Audit, AuditDocument } from '../schema/audit.schema';
 import { AuditResponseDto } from '../dto/response/audit-response.dto';
 import { AuditError, AuditOk } from '../messages/audit.messages';
 import { NewAuditDto } from '../dto/create-audit.dto';
+import { PaginationAuditDto } from '@/shared/utils/dtos/pagination-audit.dto';
+import { DefaultPageSize } from '@/shared/utils/constants/querying';
+import { PaginationService } from '@/core/services/pagination.service';
+import { PaginationMeta } from '@/core/interfaces/pagination-meta.interface';
+import { UserDocument } from '../../user/schema/user.schema';
+import { AuditLogsCount } from '../interfaces/audit-count';
 
 @Injectable()
 export class AuditService {
@@ -17,6 +23,7 @@ export class AuditService {
     private readonly auditRepo: IAuditRepository,
     @Inject(TransformDto)
     private readonly transform: TransformDto<AuditDocument, AuditResponseDto>,
+    private readonly paginationService: PaginationService,
   ) {}
 
   transformArray(data: AuditDocument[]) {
@@ -27,9 +34,31 @@ export class AuditService {
     return this.transform.transformDtoObject(data, AuditResponseDto);
   }
 
-  async getAllAudits(): Promise<AuditResponseDto[]> {
-    const audits: AuditDocument[] = await this.auditRepo.getAllAudits();
-    return this.transformArray(audits);
+  async getAllAudits(
+    param: PaginationAuditDto,
+  ): Promise<{ audits: AuditResponseDto[]; meta: PaginationMeta }> {
+    const { page, limit, search, actions, time } = param;
+
+    const take: number = limit ?? DefaultPageSize.AUDITS;
+    const skip: number = this.paginationService.calculateOffset(limit, page);
+
+    const [data, count] = await this.auditRepo.findAllAudits(
+      skip,
+      take,
+      search,
+      actions,
+      time,
+    );
+
+    const audits: AuditResponseDto[] = this.transformArray(data);
+
+    const meta: PaginationMeta = this.paginationService.createMeta(
+      limit,
+      page,
+      count,
+    );
+
+    return { audits, meta };
   }
 
   async findOne(id: string): Promise<AuditResponseDto> {
@@ -42,7 +71,8 @@ export class AuditService {
     return this.transformObject(audit);
   }
 
-  async createAudit(dto: NewAuditDto): Promise<string> {
+  //@User() user: UserEntity,
+  async createAudit(dto: NewAuditDto, user?: string): Promise<string> {
     if (!dto.ipAddress) {
       throw new BadRequestException(AuditError.AUDIT_NOT_IP);
     }
@@ -52,6 +82,12 @@ export class AuditService {
     }
 
     const newAudit = {};
+
+    if (user) {
+      dto.user = user;
+    } else {
+      dto.user = 'Anonimo';
+    }
 
     for (const key in dto) {
       if (dto[key] ?? false) newAudit[key] = dto[key];
@@ -64,6 +100,12 @@ export class AuditService {
     }
 
     return AuditOk.AUDIT_CREATED;
+  }
+
+  async countAllAudits(): Promise<AuditLogsCount> {
+    const countAudits: AuditLogsCount = await this.auditRepo.getAuditStats();
+
+    return countAudits;
   }
 
   async delete(id: string): Promise<string> {

@@ -67,6 +67,39 @@ export class ProjectImageController {
     return await this.imagesService.getAllProjectImagesByProjectId(projectId);
   }
 
+  @Get('admin/:projectId')
+  @ApiOkResponse({
+    type: OkResponseDto,
+    isArray: false,
+    description: 'Get all project image by projectid',
+  })
+  @ApiBadRequestResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Bad Request',
+  })
+  @ApiUnauthorizedResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Unauthorized',
+  })
+  @ApiNotFoundResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Project not found',
+  })
+  @ApiInternalServerErrorResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Internal Server Error',
+  })
+  @ApiOperation({ summary: 'Get all project images by projectid' })
+  @Authorize()
+  @ApiBearerAuth()
+  async getAllImagesForProjectAdmin(@Param('projectId') projectId: string) {
+    return await this.imagesService.getAllProjectImagesByProjectId(projectId);
+  }
+
   @Post()
   @ApiOkResponse({
     type: CreateResponseDto,

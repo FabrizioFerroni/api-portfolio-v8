@@ -1,4 +1,4 @@
-import { IsOptional, Max } from 'class-validator';
+import { IsOptional, IsString, Max } from 'class-validator';
 import { MAX_PAGE_NUMBER, MAX_PAGE_SIZE } from '../constants/querying';
 import { IsCardinal } from '@/shared/decorators/validators/is-cardinal.decorator';
 import { Type } from 'class-transformer';
@@ -15,4 +15,9 @@ export class PaginationDto {
   @IsCardinal()
   @Type(() => Number)
   readonly limit?: number = 10;
+
+  @IsOptional()
+  @IsString()
+  @Type(() => String)
+  readonly search?: string = '';
 }

@@ -1,11 +1,12 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Audit, AuditDocument } from '../schema/audit.schema';
-import { Model } from 'mongoose';
+import { FilterQuery, Model, QueryOptions } from 'mongoose';
 import { IAuditRepository } from './audit.interface.repository';
 import { MongoDBRepository } from '@/config/database/mongodb/mongo.base.repository';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { AuditError } from '../messages/audit.messages';
+import { AuditLogsCount } from '../interfaces/audit-count';
 
 @Injectable()
 export class AuditRepository
@@ -18,12 +19,128 @@ export class AuditRepository
     super(auditModel);
   }
 
+  async findAllAudits(
+    skip: number,
+    take: number,
+    search?: string | null,
+    action?: string | null,
+    time?: string | null,
+  ): Promise<[AuditDocument[], number]> {
+    const options: QueryOptions = {};
+
+    if (typeof skip === 'number') options.skip = skip;
+    if (typeof take === 'number') options.limit = take;
+
+    const filter: FilterQuery<AuditDocument> = {};
+
+    if (search?.trim()) {
+      if (search.includes('@')) {
+        filter.user = { $regex: search.trim(), $options: 'i' };
+      } else {
+        filter.details = { $regex: search.trim(), $options: 'i' };
+      }
+    }
+
+    if (action && action !== 'all') {
+      filter.action = { $regex: action.trim(), $options: 'i' };
+    }
+
+    if (time && time !== 'all') {
+      const nowDate = new Date();
+      const clientNow = new Date(nowDate.getTime() - 3 * 60 * 60 * 1000);
+
+      const todayUTC = new Date(
+        Date.UTC(
+          clientNow.getUTCFullYear(),
+          clientNow.getUTCMonth(),
+          clientNow.getUTCDate(),
+        ),
+      );
+
+      switch (time) {
+        case 'yesterday': {
+          const yesterdayUTC = new Date(
+            Date.UTC(
+              clientNow.getUTCFullYear(),
+              clientNow.getUTCMonth(),
+              clientNow.getUTCDate() - 1,
+            ),
+          );
+          filter.dateAudit = { $gte: yesterdayUTC, $lt: todayUTC };
+          break;
+        }
+        case 'today': {
+          filter.dateAudit = { $gte: todayUTC };
+          break;
+        }
+        case 'last7days': {
+          const from7 = new Date(
+            Date.UTC(
+              clientNow.getUTCFullYear(),
+              clientNow.getUTCMonth(),
+              clientNow.getUTCDate() - 6,
+            ),
+          );
+          filter.dateAudit = { $gte: from7 };
+          break;
+        }
+        case 'last30days': {
+          const from30 = new Date(
+            Date.UTC(
+              clientNow.getUTCFullYear(),
+              clientNow.getUTCMonth(),
+              clientNow.getUTCDate() - 29,
+            ),
+          );
+          filter.dateAudit = { $gte: from30 };
+          break;
+        }
+      }
+    }
+
+    const allAudits: AuditDocument[] = await this.findAll(filter, options);
+    const plainAudits: any[] = allAudits.map((audit: AuditDocument) =>
+      audit.toObject(),
+    );
+
+    const total: number = await this.model.countDocuments(filter);
+
+    console.log('Filter aplicado:', JSON.stringify(filter, null, 2));
+    return [plainAudits, total];
+  }
+
+  async count(): Promise<number> {
+    return this.auditModel.countDocuments().exec();
+  }
+
+  async countViews(): Promise<number> {
+    //TODO: ver como obtener los datos de vistas al portfolio
+    return this.auditModel.countDocuments().exec();
+  }
+
   async getAllAudits(): Promise<AuditDocument[]> {
     const allAudits = await this.findAll();
     const plainAudits: AuditDocument[] = allAudits.map((audit: AuditDocument) =>
       audit.toObject(),
     );
     return plainAudits;
+  }
+
+  async getAuditStats(): Promise<AuditLogsCount> {
+    const [login, created, updated, deleted] = await Promise.all([
+      this.model.countDocuments({ action: { $regex: 'login', $options: 'i' } }),
+      this.model.countDocuments({
+        action: { $regex: 'create', $options: 'i' },
+      }),
+      this.model.countDocuments({
+        action: { $regex: 'update', $options: 'i' },
+      }),
+      this.model.countDocuments({
+        action: { $regex: 'delete', $options: 'i' },
+      }),
+    ]);
+
+    return { login, created, updated, deleted };
   }
 
   async findOneAuditById(id: string): Promise<AuditDocument | null> {

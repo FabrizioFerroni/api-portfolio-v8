@@ -9,7 +9,7 @@ export class Project {
   @Prop({ required: true, trim: true })
   summary: string;
 
-  @Prop({ trim: true })
+  @Prop({ required: true, trim: true })
   description: string;
 
   @Prop({ type: Date, default: null })
@@ -18,8 +18,17 @@ export class Project {
   @Prop({ required: true, trim: true })
   slug: string;
 
-  @Prop({ default: false })
-  isFeatured: boolean;
+  @Prop({ required: true, trim: true, default: 'public' })
+  visibility: string;
+
+  @Prop({ required: true, trim: true, default: 'personal' })
+  type: string;
+
+  @Prop({ required: false, trim: true, default: '' })
+  urlGithub: string;
+
+  @Prop({ required: false, trim: true, default: '' })
+  urlProyect: string;
 
   @Prop({ required: false, trim: true })
   imageUrl: string;

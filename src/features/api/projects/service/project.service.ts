@@ -32,6 +32,12 @@ import { ProjectFeatureService } from '../../projects-features/service/project-f
 import { ProjectTechnologyService } from '../../projects-technologies/service/project-technology.service';
 import { InsertOrUpdateProjectTecDto } from '../../projects-technologies/dto/insert-update.dto';
 import { DeleteProjectTechFeat } from '../dto/delete-project-feat-tech.dto';
+import { PaginationDto } from '@/shared/utils/dtos/pagination.dto';
+import { DefaultPageSize } from '@/shared/utils/constants/querying';
+import { PaginationService } from '@/core/services/pagination.service';
+import { PaginationMeta } from '@/core/interfaces/pagination-meta.interface';
+import { ProjectImageService } from '../../projects-images/service/project-image.service';
+import { ProjectStatsResponseDto } from '../dto/response/project-stats.response.dto';
 
 @Injectable()
 export class ProjectService {
@@ -43,11 +49,13 @@ export class ProjectService {
     private readonly projectRepository: IProjectRepository,
     private readonly featuresService: ProjectFeatureService,
     private readonly technologyService: ProjectTechnologyService,
+    private readonly imagesService: ProjectImageService,
     @Inject(TransformDto)
     private readonly transformDto: TransformDto<
       ProjectWithRelations,
       ProjectResponseDto
     >,
+    private readonly paginationService: PaginationService,
   ) {}
 
   transformArray(data: ProjectWithRelations[]): ProjectResponseDto[] {
@@ -64,6 +72,40 @@ export class ProjectService {
       await this.projectRepository.getAllProjects();
 
     return this.transformArray(allProyects);
+  }
+
+  async getAllProyectsAdmin(
+    param: PaginationDto,
+  ): Promise<{ projects: ProjectResponseDto[]; meta: PaginationMeta }> {
+    const { page, limit, search } = param;
+
+    const take = limit ?? DefaultPageSize.PROJECTS;
+    const skip = this.paginationService.calculateOffset(limit, page);
+
+    const [data, count] = await this.projectRepository.getAllProjectsAdmin(
+      take,
+      skip,
+      search,
+    );
+
+    const projects: ProjectResponseDto[] = this.transformArray(data);
+
+    const meta = this.paginationService.createMeta(limit, page, count);
+
+    const response = { projects, meta };
+
+    return response;
+  }
+
+  async getStats(): Promise<ProjectStatsResponseDto> {
+    const [total, totalFront, totalBack, totalImgs] = await Promise.all([
+      this.projectRepository.count(), // del base repo
+      this.technologyService.countByCategory('frontend'),
+      this.technologyService.countByCategory('backend'),
+      this.imagesService.countAll(),
+    ]);
+
+    return { total, totalFront, totalBack, totalImgs };
   }
 
   async getProjectById(id: string): Promise<ProjectResponseDto> {
@@ -117,8 +159,6 @@ export class ProjectService {
       'dd/MM/yyyy',
       new Date(),
     );
-
-    newProject.isFeatured = Boolean(dto.isFeatured);
 
     newProject.slug = slug;
 
@@ -183,7 +223,6 @@ export class ProjectService {
       }
     }
 
-    projToEdit.isFeatured = Boolean(dto.isFeatured);
     projToEdit.publishedDate = parse(
       dto.publishedDate,
       'dd/MM/yyyy',
@@ -191,11 +230,13 @@ export class ProjectService {
     );
     projToEdit.updatedAt = new Date();
 
-    await this.removeOldDataFeatTech(dto.deleteDataFT);
+    if (dto.deleteDataFT.length > 0) {
+      await this.removeOldDataFeatTech(dto.deleteDataFT);
 
-    await this.createProjectFeat(dto.projectFeatures, id);
+      await this.createProjectFeat(dto.projectFeatures, id);
 
-    await this.createProjectTech(dto.projectTechnologies, id);
+      await this.createProjectTech(dto.projectTechnologies, id);
+    }
 
     const result: boolean = await this.projectRepository.updateProyect(
       id,
@@ -258,7 +299,7 @@ export class ProjectService {
     writeFileSync(filePath, file.buffer);
 
     data.imageUrl = `/file/projects/${id.toString()}/${filename}`;
-    data.imageFullUrl = `${configApp().apiHost}/file/projects/${id.toString()}/${filename}`;
+    data.imageFullUrl = `${configApp().frontHost}/file/projects/${id.toString()}/${filename}`;
     data.imagePath = filePath;
     data.updatedAt = new Date();
 

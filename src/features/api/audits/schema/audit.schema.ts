@@ -6,6 +6,9 @@ export class Audit {
   action: string;
 
   @Prop({ required: true })
+  user: string;
+
+  @Prop({ required: true })
   details: string;
 
   @Prop({ required: true })

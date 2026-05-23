@@ -46,12 +46,6 @@ export class CreateNewExperienceDto {
   @ApiPropertyOptional({ example: 'Worked on...' })
   description?: string;
 
-  @IsNumber()
-  @IsOptional()
-  @Min(0)
-  @ApiPropertyOptional({ example: 1 })
-  displayOrder?: number;
-
   @IsArray()
   @IsString({ each: true })
   @IsOptional()

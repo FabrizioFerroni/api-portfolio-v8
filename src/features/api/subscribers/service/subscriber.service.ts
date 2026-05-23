@@ -17,6 +17,7 @@ import { CreateSubcriberDto } from '../dto/create-subcriber.dto';
 import { SubscriberError, SubscriberOk } from '../messages/subscriber.messages';
 import { UpdateSubscriberDto } from '../dto/update-subcriber.dto';
 import { configApp } from '@/config/app/config.app';
+import { SubscriberCount } from '../interfaces/subscriber-count.interface';
 
 @Injectable()
 export class SubscriberService {
@@ -45,7 +46,7 @@ export class SubscriberService {
   async getAllSubscribers(
     param: PaginationDto,
   ): Promise<{ subscribers: SubscriberResponseDto[]; meta: PaginationMeta }> {
-    const { page, limit } = param;
+    const { page, limit, search } = param;
 
     const take: number = limit ?? DefaultPageSize.SUBSCRIBERS; // Default page size
     const skip: number = this.paginationService.calculateOffset(limit, page);
@@ -53,6 +54,7 @@ export class SubscriberService {
     const [data, count] = await this.subscriberRepo.findAllSubscribers(
       skip,
       take,
+      search,
     );
 
     const subscribers: SubscriberResponseDto[] = this.transformArray(data);
@@ -64,6 +66,13 @@ export class SubscriberService {
     );
 
     return { subscribers, meta };
+  }
+
+  async countAllSubscriber(): Promise<SubscriberCount> {
+    const countSub: SubscriberCount =
+      await this.subscriberRepo.getSubscriberStats();
+
+    return countSub;
   }
 
   async getSubscriberById(id: string): Promise<SubscriberResponseDto> {

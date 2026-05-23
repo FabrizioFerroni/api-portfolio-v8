@@ -17,6 +17,8 @@ import { PaginationService } from '@/core/services/pagination.service';
 import { PaginationDto } from '@/shared/utils/dtos/pagination.dto';
 import { DefaultPageSize } from '@/shared/utils/constants/querying';
 import { PaginationMeta } from '@/core/interfaces/pagination-meta.interface';
+import { ContactCount } from '../interfaces/contact-count.interface';
+import { UpdateStatusDto } from '../dto/update-status.dto';
 
 @Injectable()
 export class ContactService {
@@ -45,12 +47,16 @@ export class ContactService {
   async getAllContacts(
     param: PaginationDto,
   ): Promise<{ contacts: SendContactResponseDto[]; meta: PaginationMeta }> {
-    const { page, limit } = param;
+    const { page, limit, search } = param;
 
     const take = limit ?? DefaultPageSize.CONTACTS;
     const skip = this.paginationService.calculateOffset(limit, page);
 
-    const [data, count] = await this.contactRepo.getAllContacts(skip, take);
+    const [data, count] = await this.contactRepo.getAllContacts(
+      skip,
+      take,
+      search,
+    );
 
     const contacts: SendContactResponseDto[] = this.transformArray(data);
 
@@ -68,6 +74,13 @@ export class ContactService {
     }
 
     return this.transformObject(contact);
+  }
+
+  async countAllContacts(): Promise<ContactCount> {
+    const countContacts: ContactCount =
+      await this.contactRepo.getContactStats();
+
+    return countContacts;
   }
 
   async findOneEmail(email: string): Promise<SendContactResponseDto> {
@@ -125,6 +138,54 @@ export class ContactService {
     }
 
     return ContactOk.CONTACT_SEND;
+  }
+
+  async updateStatus(id: string, dto: UpdateStatusDto): Promise<string> {
+    const { status } = dto;
+    const contact = await this.contactRepo.findOneContactById(id);
+
+    if (!contact) {
+      throw new NotFoundException(ContactError.CONTACT_NOT_FOUND);
+    }
+
+    const contToEdit: Partial<Contact> = {};
+
+    contToEdit.status = status;
+    contToEdit.updatedAt = new Date();
+
+    const contUpdated: boolean = await this.contactRepo.updateContact(
+      id,
+      contToEdit as Contact,
+    );
+
+    if (!contUpdated) {
+      throw new BadRequestException(ContactError.CONTACT_ERROR);
+    }
+
+    return ContactOk.CONTACT_UPDATED;
+  }
+
+  async deleteContact(id: string): Promise<string> {
+    const contact: ContactDocument =
+      await this.contactRepo.findOneContactById(id);
+
+    if (!contact) {
+      throw new NotFoundException(ContactError.CONTACT_NOT_FOUND);
+    }
+
+    if (contact.status === 'repplied') {
+      throw new BadRequestException(
+        'No se puede eliminar un contacto que ya ha sido respondido',
+      );
+    }
+
+    const contDeleted: boolean = await this.contactRepo.deleteContact(id);
+
+    if (!contDeleted) {
+      throw new BadRequestException(ContactError.CONTACT_ERROR);
+    }
+
+    return ContactOk.CONTACT_REMOVED;
   }
 
   private async sendMailOrder(dto: SendContactDto) {

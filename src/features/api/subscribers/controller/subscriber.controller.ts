@@ -33,6 +33,7 @@ import { CreateSubcriberDto } from '../dto/create-subcriber.dto';
 import { SubscriberResponseDto } from '@/features/api/subscribers/dto/response/subscriber.response.dto';
 import { PaginationMeta } from '@/core/interfaces/pagination-meta.interface';
 import { ApiKeyLogin } from '@/features/auth/decorators/apikey.decorator';
+import { SubscriberCount } from '../interfaces/subscriber-count.interface';
 
 @Controller('subscribers')
 @ApiTags('Subscriptores')
@@ -64,6 +65,7 @@ export class SubscriberController {
   })
   @ApiQuery({ name: 'page', type: 'number', required: false })
   @ApiQuery({ name: 'limit', type: 'number', required: false })
+  @ApiQuery({ name: 'search', type: 'string', required: false })
   @ApiOperation({ summary: 'Get all subscriptors' })
   @Authorize()
   @ApiBearerAuth()
@@ -97,8 +99,8 @@ export class SubscriberController {
   @ApiOperation({ summary: 'Get count of all subscriptors' })
   @Authorize()
   @ApiBearerAuth()
-  async getCountSubscribers(): Promise<number> {
-    return await this.subscriberService.countSubscribers();
+  async getCountSubscribers(): Promise<SubscriberCount> {
+    return await this.subscriberService.countAllSubscriber();
   }
 
   @Get(':id')

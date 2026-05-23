@@ -9,6 +9,7 @@ import {
   IsString,
   Max,
   Min,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { InsertOrUpdateProjectFeatDto } from '../../projects-features/dto/insert-update.dto';
@@ -33,11 +34,27 @@ export class UpdateProjectDto {
   @IsOptional()
   publishedDate: string;
 
+  @IsString()
+  @Type(() => String)
+  @IsNotEmpty()
+  visibility: string;
+
+  @IsString()
+  @Type(() => String)
+  @IsNotEmpty()
+  type: string;
+
+  @IsString()
+  @Type(() => String)
   @IsOptional()
-  @IsInt()
-  @Min(0)
-  @Max(1)
-  isFeatured?: number;
+  @ValidateIf((u) => u.visibility === 'public')
+  urlGithub: string;
+
+  @IsString()
+  @Type(() => String)
+  @IsOptional()
+  @ValidateIf((u) => u.visibility === 'public')
+  urlProyect: string;
 
   @IsOptional()
   @Transform(({ value }) => {

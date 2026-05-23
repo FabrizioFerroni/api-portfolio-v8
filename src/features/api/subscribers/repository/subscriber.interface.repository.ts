@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { MongoDBRepository } from '@/config/database/mongodb/mongo.base.repository';
 import { Subscriber, SubscriberDocument } from '../schema/subscriber.schema';
+import { SubscriberCount } from '../interfaces/subscriber-count.interface';
 
 @Injectable()
 export abstract class ISubscriberRepository extends MongoDBRepository<SubscriberDocument> {
@@ -13,7 +14,9 @@ export abstract class ISubscriberRepository extends MongoDBRepository<Subscriber
   abstract findAllSubscribers(
     skip: number,
     take: number,
+    search?: string | null,
   ): Promise<[SubscriberDocument[], number]>;
+  abstract getSubscriberStats(): Promise<SubscriberCount>;
   abstract createSubscriber(data: SubscriberDocument): Promise<Subscriber>;
   abstract updateSubscriber(
     id: string,

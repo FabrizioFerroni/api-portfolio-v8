@@ -1,4 +1,7 @@
-import { formatDate } from '@/shared/utils/functions/format-date';
+import {
+  formatDate,
+  formatDateTime,
+} from '@/shared/utils/functions/format-date';
 import { Exclude, Expose, Transform } from 'class-transformer';
 
 export class AuditResponseDto {
@@ -10,6 +13,9 @@ export class AuditResponseDto {
   action: string;
 
   @Expose()
+  user: string;
+
+  @Expose()
   details: string;
 
   @Expose()
@@ -19,7 +25,7 @@ export class AuditResponseDto {
   ipAddress: string;
 
   @Expose({ name: 'date' })
-  @Transform(({ value }) => formatDate(value), { toPlainOnly: true })
+  @Transform(({ value }) => formatDateTime(value), { toPlainOnly: true })
   dateAudit: Date;
 
   @Exclude()

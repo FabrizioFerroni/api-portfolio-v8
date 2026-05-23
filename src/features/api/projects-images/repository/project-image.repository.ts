@@ -36,6 +36,10 @@ export class ProjectImageRepository
       : null;
   }
 
+  async countAll(): Promise<number> {
+    return this.imageModel.countDocuments().exec();
+  }
+
   async getProjectImgsByProjectId(
     idProyect: string,
   ): Promise<ProjectImageDocument[] | null> {

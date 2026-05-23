@@ -12,6 +12,10 @@ import {
 import { Types } from 'mongoose';
 
 export class InsertOrUpdateProjectFeatDto {
+  @IsOptional()
+  @IsString()
+  id?: string;
+
   @IsString()
   @IsNotEmpty()
   @ApiProperty({ type: String })
