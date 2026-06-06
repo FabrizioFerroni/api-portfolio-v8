@@ -20,4 +20,6 @@ export abstract class IProjectRepository extends MongoDBRepository<ProjectDocume
   abstract updateProyect(id: string, data: Project): Promise<boolean>;
   abstract insertMany(records: Project[]): Promise<ProjectDocument[]>;
   abstract deleteProject(id: string): Promise<boolean>;
+  abstract countThisMonth(): Promise<number>;
+  abstract countPreviousMonth(): Promise<number>;
 }

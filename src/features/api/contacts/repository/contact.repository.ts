@@ -7,6 +7,10 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { ContactError } from '../messages/contact.messages';
 import { ContactCount } from '../interfaces/contact-count.interface';
+import {
+  getCurrentMonthRange,
+  getPreviousMonthRange,
+} from '@/shared/utils/functions/date.utils';
 
 @Injectable()
 export class ContactRepository
@@ -52,6 +56,24 @@ export class ContactRepository
 
   async count(): Promise<number> {
     return this.contactModel.countDocuments().exec();
+  }
+
+  async countThisMonth(): Promise<number> {
+    const { start, end } = getCurrentMonthRange();
+    return this.contactModel
+      .countDocuments({
+        createdAt: { $gte: start, $lt: end },
+      })
+      .exec();
+  }
+
+  async countPreviousMonth(): Promise<number> {
+    const { start, end } = getPreviousMonthRange();
+    return this.contactModel
+      .countDocuments({
+        createdAt: { $gte: start, $lt: end },
+      })
+      .exec();
   }
 
   async getContactStats(): Promise<ContactCount> {

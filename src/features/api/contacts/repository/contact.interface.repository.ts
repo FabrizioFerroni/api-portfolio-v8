@@ -26,4 +26,6 @@ export abstract class IContactRepository extends MongoDBRepository<ContactDocume
   abstract updateContact(id: string, data: Contact): Promise<boolean>;
   abstract deleteContact(id: string): Promise<boolean>;
   abstract count(): Promise<number>;
+  abstract countThisMonth(): Promise<number>;
+  abstract countPreviousMonth(): Promise<number>;
 }

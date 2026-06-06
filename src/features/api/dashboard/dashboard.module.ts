@@ -9,6 +9,7 @@ import { ProjectModule } from '../projects/projects.module';
 import { AuditsModule } from '../audits/audits.module';
 import { ContactsModule } from '../contacts/contacts.module';
 import { DashboardController } from './controller/dashboard.controller';
+import { PortfolioViewModule } from '../portfolioviews/portfolioviews.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { DashboardController } from './controller/dashboard.controller';
     ProjectModule,
     AuditsModule,
     ContactsModule,
+    PortfolioViewModule,
   ],
   controllers: [DashboardController],
   providers: [

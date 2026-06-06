@@ -12,6 +12,10 @@ import { Types } from 'mongoose';
 import { ProjectWithRelations } from '../interfaces/project-with-relations.interface';
 import { ProjectError } from '../messages/project.messages';
 import { QueryOptions } from 'mongoose';
+import {
+  getCurrentMonthRange,
+  getPreviousMonthRange,
+} from '@/shared/utils/functions/date.utils';
 
 @Injectable()
 export class ProjectRepository
@@ -109,6 +113,24 @@ export class ProjectRepository
 
   async count(): Promise<number> {
     return this.projectModel.countDocuments().exec();
+  }
+
+  async countThisMonth(): Promise<number> {
+    const { start, end } = getCurrentMonthRange();
+    return this.projectModel
+      .countDocuments({
+        createdAt: { $gte: start, $lt: end },
+      })
+      .exec();
+  }
+
+  async countPreviousMonth(): Promise<number> {
+    const { start, end } = getPreviousMonthRange();
+    return this.projectModel
+      .countDocuments({
+        createdAt: { $gte: start, $lt: end },
+      })
+      .exec();
   }
 
   async getProjectById(id: string): Promise<ProjectWithRelations | null> {

@@ -17,6 +17,7 @@ export type ConfigApp = {
   hostAllowedHeader: string;
   hostCredentials: boolean;
   frontHost: string;
+  frontHostPortfolio: string;
   filesDest: string;
   filesDestTemp: string;
   filesPathRoute: string;

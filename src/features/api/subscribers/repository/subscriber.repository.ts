@@ -13,6 +13,10 @@ import { plainToInstance } from 'class-transformer';
 import { SubscriberError } from '../messages/subscriber.messages';
 import { ObjectId } from 'bson';
 import { SubscriberCount } from '../interfaces/subscriber-count.interface';
+import {
+  getCurrentMonthRange,
+  getPreviousMonthRange,
+} from '@/shared/utils/functions/date.utils';
 
 @Injectable()
 export class SubscriberRepository
@@ -85,6 +89,24 @@ export class SubscriberRepository
       active,
       inactive: total - active,
     };
+  }
+
+  async countThisMonth(): Promise<number> {
+    const { start, end } = getCurrentMonthRange();
+    return this.subscriberModel
+      .countDocuments({
+        createdAt: { $gte: start, $lt: end },
+      })
+      .exec();
+  }
+
+  async countPreviousMonth(): Promise<number> {
+    const { start, end } = getPreviousMonthRange();
+    return this.subscriberModel
+      .countDocuments({
+        createdAt: { $gte: start, $lt: end },
+      })
+      .exec();
   }
 
   async createSubscriber(data: SubscriberDocument): Promise<Subscriber> {

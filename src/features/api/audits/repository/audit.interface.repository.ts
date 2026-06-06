@@ -15,8 +15,12 @@ export abstract class IAuditRepository extends MongoDBRepository<AuditDocument> 
   ): Promise<[AuditDocument[], number]>;
   abstract findOneAuditById(id: string): Promise<AuditDocument | null>;
   abstract getAuditStats(): Promise<AuditLogsCount>;
+  abstract getLastFiveAudits(): Promise<AuditDocument[]>;
   abstract createAudit(data: Audit): Promise<Audit>;
   abstract removeAudit(id: string): Promise<boolean>;
   abstract count(): Promise<number>;
   abstract countViews(): Promise<number>;
+  abstract countViewsPortfolio(): Promise<number>;
+  abstract countViewsPortfolioThisMonth(): Promise<number>;
+  abstract countViewsPortfolioPreviousMonth(): Promise<number>;
 }

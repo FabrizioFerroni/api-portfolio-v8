@@ -17,6 +17,8 @@ export abstract class ISubscriberRepository extends MongoDBRepository<Subscriber
     search?: string | null,
   ): Promise<[SubscriberDocument[], number]>;
   abstract getSubscriberStats(): Promise<SubscriberCount>;
+  abstract countThisMonth(): Promise<number>;
+  abstract countPreviousMonth(): Promise<number>;
   abstract createSubscriber(data: SubscriberDocument): Promise<Subscriber>;
   abstract updateSubscriber(
     id: string,

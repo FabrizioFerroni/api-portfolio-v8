@@ -16,6 +16,7 @@ import { PaginationService } from '@/core/services/pagination.service';
 import { PaginationMeta } from '@/core/interfaces/pagination-meta.interface';
 import { UserDocument } from '../../user/schema/user.schema';
 import { AuditLogsCount } from '../interfaces/audit-count';
+import { configApp } from '@/config/app/config.app';
 
 @Injectable()
 export class AuditService {
@@ -61,6 +62,11 @@ export class AuditService {
     return { audits, meta };
   }
 
+  async getLastFiveAudits(): Promise<AuditResponseDto[]> {
+    const audits = await this.auditRepo.getLastFiveAudits();
+    return this.transformArray(audits);
+  }
+
   async findOne(id: string): Promise<AuditResponseDto> {
     const audit = await this.auditRepo.findOneAuditById(id);
 
@@ -72,7 +78,11 @@ export class AuditService {
   }
 
   //@User() user: UserEntity,
-  async createAudit(dto: NewAuditDto, user?: string): Promise<string> {
+  async createAudit(
+    dto: NewAuditDto,
+    fullUrl?: string,
+    user?: string,
+  ): Promise<string> {
     if (!dto.ipAddress) {
       throw new BadRequestException(AuditError.AUDIT_NOT_IP);
     }
@@ -81,7 +91,7 @@ export class AuditService {
       throw new BadRequestException(AuditError.AUDIT_NOT_MODULE);
     }
 
-    const newAudit = {};
+    const newAudit: Partial<Audit> = {};
 
     if (user) {
       dto.user = user;
@@ -91,6 +101,16 @@ export class AuditService {
 
     for (const key in dto) {
       if (dto[key] ?? false) newAudit[key] = dto[key];
+    }
+
+    if (fullUrl !== '') {
+      if (configApp().frontHostPortfolio === fullUrl) {
+        newAudit.isPortfolio = true;
+      } else {
+        newAudit.isPortfolio = false;
+      }
+    } else {
+      newAudit.isPortfolio = false;
     }
 
     const result: Audit = await this.auditRepo.createAudit(newAudit as Audit);

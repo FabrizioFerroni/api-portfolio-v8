@@ -40,9 +40,37 @@ export class DashboardController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Get all dashboard stats' })
-  /*@Authorize()
-    @ApiBearerAuth()*/
+  @Authorize()
+  @ApiBearerAuth()
   async getAllDashboardStats() {
     return await this.dashboardService.getStats();
+  }
+
+  @Get('stats/monthly')
+  @ApiOkResponse({
+    type: OkResponseDto,
+    isArray: false,
+    description: 'Get all dashboard stats monthly',
+  })
+  @ApiBadRequestResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Bad Request',
+  })
+  @ApiUnauthorizedResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Unauthorized',
+  })
+  @ApiInternalServerErrorResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Internal Server Error',
+  })
+  @ApiOperation({ summary: 'Get all dashboard stats monthly' })
+  @Authorize()
+  @ApiBearerAuth()
+  async getAllDashboardMonthlyStats() {
+    return await this.dashboardService.getStatsMonthly();
   }
 }

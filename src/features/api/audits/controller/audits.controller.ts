@@ -80,6 +80,32 @@ export class AuditsController {
     return await this.auditService.countAllAudits();
   }
 
+  @Get('dashboard')
+  @ApiOkResponse({
+    type: OkResponseDto,
+    isArray: false,
+    description: 'Get last fitve audits',
+  })
+  @ApiBadRequestResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Bad Request',
+  })
+  @ApiUnauthorizedResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Unauthorized',
+  })
+  @ApiInternalServerErrorResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Internal Server Error',
+  })
+  @ApiOperation({ summary: 'Get last five audits' })
+  async getLastFiveAudits() {
+    return await this.auditService.getLastFiveAudits();
+  }
+
   @Get(':id')
   @ApiOkResponse({
     type: OkResponseDto,

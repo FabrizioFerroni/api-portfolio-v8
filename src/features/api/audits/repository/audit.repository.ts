@@ -7,6 +7,10 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { AuditError } from '../messages/audit.messages';
 import { AuditLogsCount } from '../interfaces/audit-count';
+import {
+  getCurrentMonthRange,
+  getPreviousMonthRange,
+} from '@/shared/utils/functions/date.utils';
 
 @Injectable()
 export class AuditRepository
@@ -114,8 +118,11 @@ export class AuditRepository
   }
 
   async countViews(): Promise<number> {
-    //TODO: ver como obtener los datos de vistas al portfolio
     return this.auditModel.countDocuments().exec();
+  }
+
+  async countViewsPortfolio(): Promise<number> {
+    return this.auditModel.countDocuments({ isPortfolio: true }).exec();
   }
 
   async getAllAudits(): Promise<AuditDocument[]> {
@@ -124,6 +131,15 @@ export class AuditRepository
       audit.toObject(),
     );
     return plainAudits;
+  }
+
+  async getLastFiveAudits(): Promise<AuditDocument[]> {
+    return this.auditModel
+      .find()
+      .sort({ createdAt: -1 })
+      .limit(8)
+      .lean<AuditDocument[]>()
+      .exec();
   }
 
   async getAuditStats(): Promise<AuditLogsCount> {
@@ -167,5 +183,25 @@ export class AuditRepository
     }
 
     return true;
+  }
+
+  async countViewsPortfolioThisMonth(): Promise<number> {
+    const { start, end } = getCurrentMonthRange();
+    return this.auditModel
+      .countDocuments({
+        isPortfolio: true,
+        createdAt: { $gte: start, $lt: end },
+      })
+      .exec();
+  }
+
+  async countViewsPortfolioPreviousMonth(): Promise<number> {
+    const { start, end } = getPreviousMonthRange();
+    return this.auditModel
+      .countDocuments({
+        isPortfolio: true,
+        createdAt: { $gte: start, $lt: end },
+      })
+      .exec();
   }
 }
