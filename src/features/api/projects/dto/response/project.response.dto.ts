@@ -24,7 +24,10 @@ export class ProjectResponseDto {
   slug: string;
 
   @Expose()
-  isFeatured: boolean;
+  visibility: string;
+
+  @Expose()
+  type: string;
 
   @Expose()
   imageUrl: string;

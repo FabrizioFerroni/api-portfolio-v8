@@ -10,6 +10,7 @@ export abstract class IProjectTechnologyRepository extends MongoDBRepository<Pro
   abstract getTechnologyById(
     id: string,
   ): Promise<ProjectTechnologyDocument | null>;
+  abstract countByCategory(category: string): Promise<number>;
   abstract findByProjectIds(
     projectIds: Types.ObjectId[],
   ): Promise<ProjectTechnologyDocument[]>;

@@ -64,6 +64,10 @@ export class ProjectTechnologyService {
     return this.transformObject(technology);
   }
 
+  async countByCategory(category: string): Promise<number> {
+    return this.techRepository.countByCategory(category);
+  }
+
   async getOneByName(name: string) {
     const technology: ProjectTechnologyDocument =
       await this.techRepository.getTechnologyByName(name);

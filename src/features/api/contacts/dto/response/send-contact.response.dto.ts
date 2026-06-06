@@ -18,6 +18,9 @@ export class SendContactResponseDto {
   @Expose()
   message: string;
 
+  @Expose()
+  status: string;
+
   @Expose({ name: 'send_at' })
   @Transform(({ value }) => formatDateTime(value), { toPlainOnly: true })
   sendAt: Date;

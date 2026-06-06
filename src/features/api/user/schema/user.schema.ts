@@ -21,6 +21,12 @@ export class User {
   })
   avatar: string;
 
+  @Prop({ required: false, trim: true })
+  imageUrl: string;
+
+  @Prop({ required: false, trim: true })
+  imagePath: string;
+
   @Prop({ required: true, default: false })
   active: boolean;
 

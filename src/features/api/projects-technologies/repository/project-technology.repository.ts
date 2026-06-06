@@ -53,6 +53,12 @@ export class ProjectTechnologyRepository
       : null;
   }
 
+  async countByCategory(category: string): Promise<number> {
+    return this.technologyModel
+      .countDocuments({ category: { $regex: `^${category}$`, $options: 'i' } })
+      .exec();
+  }
+
   async getTechnologyByName(
     name: string,
   ): Promise<ProjectTechnologyDocument | null> {

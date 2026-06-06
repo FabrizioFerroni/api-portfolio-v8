@@ -9,12 +9,14 @@ import { ExperiencieRepository } from '@/features/api/experiences/repository/exp
 import { IExperiencesRepository } from '@/features/api/experiences/repository/experiencie.interface.repository';
 import { ExperienceService } from '@/features/api/experiences/service/experience.service';
 import { ExperienceController } from '@/features/api/experiences/controller/eperience.controller';
+import { CoreModule } from '@/core/core.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Experience.name, schema: ExperienceSchema },
     ]),
+    CoreModule,
   ],
   controllers: [ExperienceController],
   providers: [

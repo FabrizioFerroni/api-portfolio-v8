@@ -1,13 +1,26 @@
-import { formatDate } from '@/shared/utils/functions/format-date';
+import {
+  formatDate,
+  formatDateTime,
+} from '@/shared/utils/functions/format-date';
 import { Exclude, Expose, Transform } from 'class-transformer';
 
 export class AuditResponseDto {
-  @Expose({ name: 'id' })
+  /*@Expose({ name: 'id' })
   @Transform(({ value }) => value.toString(), { toPlainOnly: true })
+  _id: string;*/
+
+  @Expose({ name: 'id' })
+  @Transform(({ obj }) => obj._id?.toString(), { toPlainOnly: true })
   _id: string;
 
   @Expose()
   action: string;
+
+  @Expose()
+  user: string;
+
+  @Expose()
+  description: string;
 
   @Expose()
   details: string;
@@ -18,9 +31,19 @@ export class AuditResponseDto {
   @Expose({ name: 'ip' })
   ipAddress: string;
 
+  /*@Expose({ name: 'date' })
+  @Transform(({ value }) => formatDateTime(value), { toPlainOnly: true })
+  dateAudit: Date;*/
+
   @Expose({ name: 'date' })
-  @Transform(({ value }) => formatDate(value), { toPlainOnly: true })
+  @Transform(
+    ({ obj }) => (obj.dateAudit ? formatDateTime(obj.dateAudit) : null),
+    { toPlainOnly: true },
+  )
   dateAudit: Date;
+
+  @Expose()
+  isPortfolio: boolean;
 
   @Exclude()
   createdAt: Date;

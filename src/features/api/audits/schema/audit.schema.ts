@@ -6,13 +6,22 @@ export class Audit {
   action: string;
 
   @Prop({ required: true })
+  user: string;
+
+  @Prop({ required: true })
   details: string;
+
+  @Prop({ required: true })
+  description: string;
 
   @Prop({ required: true })
   ipAddress: string;
 
   @Prop({ required: true })
   module: string;
+
+  @Prop({ required: true, default: false })
+  isPortfolio: boolean;
 
   @Prop({ type: Date, default: Date.now })
   dateAudit: Date;

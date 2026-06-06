@@ -12,6 +12,7 @@ import { TransformDto } from '@/shared/utils';
 import { ProjectService } from './service/project.service';
 import { ProjectController } from './controller/project.controller';
 import { memoryStorage } from 'multer';
+import { CoreModule } from '@/core/core.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { memoryStorage } from 'multer';
     MulterModule.register({
       storage: memoryStorage(),
     }),
+    CoreModule,
   ],
   controllers: [ProjectController],
   providers: [

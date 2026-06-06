@@ -11,6 +11,11 @@ import { groupBy } from '@/shared/utils/functions/groupBy';
 import { Types } from 'mongoose';
 import { ProjectWithRelations } from '../interfaces/project-with-relations.interface';
 import { ProjectError } from '../messages/project.messages';
+import { QueryOptions } from 'mongoose';
+import {
+  getCurrentMonthRange,
+  getPreviousMonthRange,
+} from '@/shared/utils/functions/date.utils';
 
 @Injectable()
 export class ProjectRepository
@@ -53,6 +58,79 @@ export class ProjectRepository
         features: (featuresMap[id] ?? []).map((f) => f.toObject()), // 👈
       };
     });
+  }
+
+  async getAllProjectsAdmin(
+    take: number,
+    skip: number,
+    search?: string | null,
+  ): Promise<[ProjectWithRelations[] | null, number]> {
+    const options: QueryOptions = {};
+
+    if (typeof skip === 'number') options.skip = skip;
+    if (typeof take === 'number') options.limit = take;
+
+    const filter: FilterQuery<ProjectDocument> = {};
+
+    if (search) {
+      const regex = new RegExp(search, 'i');
+
+      filter.$or = [{ title: regex }];
+    }
+
+    const allProjects: ProjectDocument[] = await this.findAll(filter, {
+      ...options,
+    });
+
+    if (!allProjects || allProjects.length === 0) return [null, 0];
+
+    const projectIds = allProjects.map((p) => p._id) as Types.ObjectId[];
+
+    const [images, technologies, features] = await Promise.all([
+      this.projectImageRepository.findByProjectIds(projectIds),
+      this.projectTechnologyRepository.findByProjectIds(projectIds),
+      this.projectFeatureRepository.findByProjectIds(projectIds),
+    ]);
+
+    const imagesMap = groupBy(images, (i) => String(i.projectId));
+    const techMap = groupBy(technologies, (t) => String(t.projectId));
+    const featuresMap = groupBy(features, (f) => String(f.projectId));
+
+    const result = allProjects.map((project) => {
+      const id = String(project._id);
+      return {
+        ...project.toObject(),
+        images: (imagesMap[id] ?? []).map((i) => i.toObject()),
+        technologies: (techMap[id] ?? []).map((t) => t.toObject()),
+        features: (featuresMap[id] ?? []).map((f) => f.toObject()),
+      };
+    });
+
+    const total = await this.model.countDocuments(filter);
+
+    return [result, total];
+  }
+
+  async count(): Promise<number> {
+    return this.projectModel.countDocuments().exec();
+  }
+
+  async countThisMonth(): Promise<number> {
+    const { start, end } = getCurrentMonthRange();
+    return this.projectModel
+      .countDocuments({
+        createdAt: { $gte: start, $lt: end },
+      })
+      .exec();
+  }
+
+  async countPreviousMonth(): Promise<number> {
+    const { start, end } = getPreviousMonthRange();
+    return this.projectModel
+      .countDocuments({
+        createdAt: { $gte: start, $lt: end },
+      })
+      .exec();
   }
 
   async getProjectById(id: string): Promise<ProjectWithRelations | null> {

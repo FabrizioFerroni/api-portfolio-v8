@@ -10,6 +10,7 @@ import { Types } from 'mongoose';
 export abstract class IProjectImageRepository extends MongoDBRepository<ProjectImageDocument> {
   abstract getAllProjectsImages(): Promise<ProjectImageDocument[] | null>;
   abstract getProjectImgById(id: string): Promise<ProjectImageDocument | null>;
+  abstract countAll(): Promise<number>;
   abstract findByProjectIds(
     projectIds: Types.ObjectId[],
   ): Promise<ProjectImageDocument[]>;

@@ -66,6 +66,10 @@ export class ProjectImageService {
     return this.transformObject(img);
   }
 
+  async countAll(): Promise<number> {
+    return this.imgRepository.countAll();
+  }
+
   async getAllProjectImagesByProjectId(
     projectId: string,
   ): Promise<ProjectImageResponseDto[] | null> {
@@ -91,7 +95,7 @@ export class ProjectImageService {
 
     const record: ProjectImage = {
       imageUrl: `/file/projects/${dto.projectId}/${filename}`,
-      imageFullUrl: `${configApp().apiHost}/file/projects/${dto.projectId}/${filename}`,
+      imageFullUrl: `${configApp().frontHost}/file/projects/${dto.projectId}/${filename}`, //TODO: fronthost debiera ser el host del frontedn del portfolio...
       imagePath: filePath,
       displayOrder: dto.displayOrder ?? 0,
       altText: dto.altText ?? `Imagen proyecto ${dto.projectName}`,

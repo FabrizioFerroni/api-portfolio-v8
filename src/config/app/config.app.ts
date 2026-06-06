@@ -31,6 +31,8 @@ export const configApp = (): ConfigApp => {
     hostAllowedHeader: process.env.HOST_ALLOWED_HEADERS || '*',
     hostCredentials: Boolean(process.env.HOST_CREDENTIALS) || Boolean(false),
     frontHost: process.env.FRONT_HOST || 'http://localhost:3000',
+    frontHostPortfolio:
+      process.env.FRONT_HOST_PORTFOLIO || 'http://localhost:4200',
     filesDest: process.env.FILES_DEST || './uploads',
     filesDestTemp: process.env.FILES_DEST_TEMP || './uploads/temp',
     defaultUser: {

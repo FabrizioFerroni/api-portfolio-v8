@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -30,6 +32,7 @@ import { clearScreenDown } from 'readline';
 import { PaginationDto } from '@/shared/utils/dtos/pagination.dto';
 import { Authorize } from '@/features/auth/decorators/authorized.decorators';
 import { ApiKeyLogin } from '@/features/auth/decorators/apikey.decorator';
+import { UpdateStatusDto } from '../dto/update-status.dto';
 
 @Controller('contact')
 @ApiTags('Contactos')
@@ -59,11 +62,38 @@ export class ContactController {
   })
   @ApiQuery({ name: 'page', type: 'number', required: false })
   @ApiQuery({ name: 'limit', type: 'number', required: false })
+  @ApiQuery({ name: 'search', type: 'string', required: false })
   @ApiOperation({ summary: 'Get all contacts' })
   @Authorize()
   @ApiBearerAuth()
   async getAllContacts(@Query() param: PaginationDto) {
     return await this.contactService.getAllContacts(param);
+  }
+
+  @Get('count')
+  @ApiOkResponse({
+    type: OkResponseDto,
+    isArray: false,
+    description: 'Get stadistic for a contacts',
+  })
+  @ApiBadRequestResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Bad Request',
+  })
+  @ApiUnauthorizedResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Unauthorized',
+  })
+  @ApiInternalServerErrorResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Internal Server Error',
+  })
+  @ApiOperation({ summary: 'Get stadistic for a contacts' })
+  async countContacts() {
+    return await this.contactService.countAllContacts();
   }
 
   @Get(':id')
@@ -258,5 +288,74 @@ export class ContactController {
   @ApiKeyLogin()
   create(@Body() dto: SendContactDto) {
     return this.contactService.createContact(dto);
+  }
+
+  @Patch('status/:id')
+  @ApiOkResponse({
+    type: OkResponseDto,
+    isArray: false,
+    description: 'Update a status contact with id',
+  })
+  @ApiBadRequestResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Bad Request',
+  })
+  @ApiUnauthorizedResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Unauthorized',
+  })
+  @ApiNotFoundResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Contact not found',
+  })
+  @ApiInternalServerErrorResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Internal Server Error',
+  })
+  @ApiOperation({ summary: 'Update an status contact by id' })
+  @Authorize()
+  @ApiBearerAuth()
+  async updateStatusContact(
+    @Param('id') id: string,
+    @Body() dto: UpdateStatusDto,
+  ) {
+    return this.contactService.updateStatus(id, dto);
+  }
+
+  @Delete(':id')
+  @ApiOkResponse({
+    type: OkResponseDto,
+    isArray: false,
+    description: 'Delete a contact with id',
+  })
+  @ApiBadRequestResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Bad Request',
+  })
+  @ApiUnauthorizedResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Unauthorized',
+  })
+  @ApiNotFoundResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Contact not found',
+  })
+  @ApiInternalServerErrorResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Internal Server Error',
+  })
+  @ApiOperation({ summary: 'Delete an contact by id' })
+  @Authorize()
+  @ApiBearerAuth()
+  async deleteContact(@Param('id') id: string) {
+    return await this.contactService.deleteContact(id);
   }
 }

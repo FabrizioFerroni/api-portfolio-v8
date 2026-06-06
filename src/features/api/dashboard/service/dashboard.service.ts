@@ -1,0 +1,19 @@
+import { Injectable } from '@nestjs/common';
+import { DashboardSummaryDto } from '../dto/dashboard-summary.dto';
+import { IDashboardRepository } from '../repository/dashboard.interface.repository';
+import { DashboardMonthlySummaryDto } from '../dto/dashboard-monthly-summary.dto';
+
+@Injectable()
+export class DashboardService {
+  constructor(private readonly dashboardRepository: IDashboardRepository) {}
+
+  async getStats(): Promise<DashboardSummaryDto> {
+    const response = await this.dashboardRepository.getSummary();
+
+    return response;
+  }
+
+  async getStatsMonthly(): Promise<DashboardMonthlySummaryDto> {
+    return await this.dashboardRepository.getMonthlySummary();
+  }
+}

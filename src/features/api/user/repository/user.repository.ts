@@ -63,20 +63,12 @@ export class UserRepository
     return user;
   }
 
-  async updateUser(id: string, data: User): Promise<boolean> {
-    const user = plainToInstance(User, data);
-
-    const query = {
-      $set: user,
-    };
+  async updateUser(id: string, data: Partial<User>): Promise<boolean> {
+    const query = { $set: data };
 
     const userUpdated = await this.update(id, query);
 
-    if (!userUpdated.acknowledged) {
-      return null;
-    }
-
-    if (userUpdated.modifiedCount !== 1) {
+    if (!userUpdated.acknowledged || userUpdated.modifiedCount !== 1) {
       throw new InternalServerErrorException(UserError.INTERNAL_SERVER_ERROR);
     }
 

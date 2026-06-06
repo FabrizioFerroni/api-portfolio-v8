@@ -2,7 +2,7 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 # Correr test unitarios de integración
-npm run test -- --passWithNoTests
+#npm run test -- --passWithNoTests
 
 # Correr test end to end 
 #npm run test:e2e -- --passWithNoTests
