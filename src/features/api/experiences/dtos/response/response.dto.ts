@@ -31,10 +31,10 @@ export class ExperienceResponseDto {
   description: string;
 
   @Expose()
-  displayOrder: number;
+  skills: string[];
 
   @Expose()
-  skills: string[];
+  achievements: string[];
 
   @Exclude()
   createdAt: Date;

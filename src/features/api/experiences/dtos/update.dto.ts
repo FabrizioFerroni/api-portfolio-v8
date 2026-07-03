@@ -54,4 +54,13 @@ export class UpdateExperienceDto {
     example: ['NestJS', 'MongoDB'],
   })
   skills?: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  @ApiPropertyOptional({
+    type: [String],
+    example: ['Logro 1', 'Logro 2'],
+  })
+  achievements?: string[];
 }

@@ -19,15 +19,10 @@ export abstract class IExperiencesRepository extends MongoDBRepository<Experienc
     company: string,
     id?: string,
   ): Promise<boolean>;
-  abstract getExperienceByDisplayOrder(
-    displayOrder: number,
-  ): Promise<ExperienceDocument | null>;
   abstract countExperiences(): Promise<number>;
   abstract getExperienceById(id: string): Promise<ExperienceDocument | null>;
   abstract createExperience(data: Experience): Promise<Experience>;
   abstract updateExperience(id: string, data: Experience): Promise<boolean>;
   abstract deleteExperience(id: string): Promise<boolean>;
-  abstract decrementDisplayOrderFrom(deletedOrder: number): Promise<void>;
-  abstract getLastDisplayOrder(): Promise<number>;
-  abstract getLastCurrentPosition(): Promise<boolean>;
+  abstract hasCurrentPosition(excludeId?: string): Promise<boolean>;
 }
