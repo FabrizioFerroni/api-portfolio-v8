@@ -79,185 +79,6 @@ export class ExperienceService {
     return countExperiences;
   }
 
-  /*async moveUpDisplayOrder(id: string) {
-    const experience: ExperienceDocument =
-      await this.expRepository.getExperienceById(id);
-
-    if (!experience) {
-      throw new NotFoundException(ExperienceError.EXPERIENCE_NOT_FOUND);
-    }
-
-    const totalExperiences = await this.expRepository.countExperiences();
-    if (totalExperiences <= 1) {
-      throw new BadRequestException(ExperienceError.EXPERIENCE_ONLY_ONE);
-    }
-
-    // Buscar el vecino con displayOrder inmediatamente superior
-    const neighbor: ExperienceDocument =
-      await this.expRepository.getExperienceByDisplayOrder(
-        experience.displayOrder + 1,
-      );
-
-    if (!neighbor) {
-      throw new BadRequestException(ExperienceError.EXPERIENCE_ALREADY_AT_TOP);
-    }
-
-    const [updatedCurrent, updatedNeighbor] = await Promise.all([
-      this.expRepository.updateExperience(id, {
-        displayOrder: neighbor.displayOrder,
-        updatedAt: new Date(),
-      } as Experience),
-      this.expRepository.updateExperience(neighbor.id, {
-        displayOrder: experience.displayOrder,
-        updatedAt: new Date(),
-      } as Experience),
-    ]);
-
-    if (!updatedCurrent || !updatedNeighbor) {
-      throw new BadRequestException(ExperienceError.EXPERIENCE_ERROR);
-    }
-
-    return ExperienceMessages.EXPERIENCE_MOVED_UP;
-  }
-
-  async moveDownDisplayOrder(id: string) {
-    const experience: ExperienceDocument =
-      await this.expRepository.getExperienceById(id);
-
-    if (!experience) {
-      throw new NotFoundException(ExperienceError.EXPERIENCE_NOT_FOUND);
-    }
-
-    console.log(
-      `displayOrder original antes de moveDown: ${experience.displayOrder}`,
-    );
-    const totalExperiences = await this.expRepository.countExperiences();
-    if (totalExperiences <= 1) {
-      throw new BadRequestException(ExperienceError.EXPERIENCE_ONLY_ONE);
-    }
-
-    console.log(
-      `displayOrder original antes de moveDown: ${experience.displayOrder}`,
-    );
-
-    const neighbor: ExperienceDocument =
-      await this.expRepository.getExperienceByDisplayOrder(
-        experience.displayOrder - 1,
-      );
-
-    console.log(
-      `displayOrder original neighbor de moveDown: ${neighbor.displayOrder}`,
-    );
-
-    if (!neighbor) {
-      throw new BadRequestException(
-        ExperienceError.EXPERIENCE_ALREADY_AT_BOTTOM,
-      );
-    }
-
-    // Swap
-    const [updatedCurrent, updatedNeighbor] = await Promise.all([
-      this.expRepository.updateExperience(id, {
-        displayOrder: neighbor.displayOrder,
-        updatedAt: new Date(),
-      } as Experience),
-      this.expRepository.updateExperience(neighbor.id, {
-        displayOrder: experience.displayOrder,
-        updatedAt: new Date(),
-      } as Experience),
-    ]);
-
-    if (!updatedCurrent || !updatedNeighbor) {
-      throw new BadRequestException(ExperienceError.EXPERIENCE_ERROR);
-    }
-
-    return ExperienceMessages.EXPERIENCE_MOVED_DOWN;
-  }*/
-
-  async moveUpDisplayOrder(id: string) {
-    const experience: ExperienceDocument =
-      await this.expRepository.getExperienceById(id);
-
-    if (!experience) {
-      throw new NotFoundException(ExperienceError.EXPERIENCE_NOT_FOUND);
-    }
-
-    const totalExperiences = await this.expRepository.countExperiences();
-    if (totalExperiences <= 1) {
-      throw new BadRequestException(ExperienceError.EXPERIENCE_ONLY_ONE);
-    }
-
-    // displayOrder menor = más arriba, si es 0 ya está en el tope
-    const neighbor: ExperienceDocument =
-      await this.expRepository.getExperienceByDisplayOrder(
-        experience.displayOrder - 1,
-      );
-
-    if (!neighbor) {
-      throw new BadRequestException(ExperienceError.EXPERIENCE_ALREADY_AT_TOP);
-    }
-
-    const [updatedCurrent, updatedNeighbor] = await Promise.all([
-      this.expRepository.updateExperience(id, {
-        displayOrder: neighbor.displayOrder,
-        updatedAt: new Date(),
-      } as Experience),
-      this.expRepository.updateExperience(neighbor.id, {
-        displayOrder: experience.displayOrder,
-        updatedAt: new Date(),
-      } as Experience),
-    ]);
-
-    if (!updatedCurrent || !updatedNeighbor) {
-      throw new BadRequestException(ExperienceError.EXPERIENCE_ERROR);
-    }
-
-    return ExperienceMessages.EXPERIENCE_MOVED_UP;
-  }
-
-  async moveDownDisplayOrder(id: string) {
-    const experience: ExperienceDocument =
-      await this.expRepository.getExperienceById(id);
-
-    if (!experience) {
-      throw new NotFoundException(ExperienceError.EXPERIENCE_NOT_FOUND);
-    }
-
-    const totalExperiences = await this.expRepository.countExperiences();
-    if (totalExperiences <= 1) {
-      throw new BadRequestException(ExperienceError.EXPERIENCE_ONLY_ONE);
-    }
-
-    // displayOrder mayor = más abajo
-    const neighbor: ExperienceDocument =
-      await this.expRepository.getExperienceByDisplayOrder(
-        experience.displayOrder + 1,
-      );
-
-    if (!neighbor) {
-      throw new BadRequestException(
-        ExperienceError.EXPERIENCE_ALREADY_AT_BOTTOM,
-      );
-    }
-
-    const [updatedCurrent, updatedNeighbor] = await Promise.all([
-      this.expRepository.updateExperience(id, {
-        displayOrder: neighbor.displayOrder,
-        updatedAt: new Date(),
-      } as Experience),
-      this.expRepository.updateExperience(neighbor.id, {
-        displayOrder: experience.displayOrder,
-        updatedAt: new Date(),
-      } as Experience),
-    ]);
-
-    if (!updatedCurrent || !updatedNeighbor) {
-      throw new BadRequestException(ExperienceError.EXPERIENCE_ERROR);
-    }
-
-    return ExperienceMessages.EXPERIENCE_MOVED_DOWN;
-  }
-
   async getExperienceById(id: string): Promise<ExperienceResponseDto> {
     const experience: ExperienceDocument =
       await this.expRepository.getExperienceById(id);
@@ -283,12 +104,8 @@ export class ExperienceService {
       if (dto[exp] ?? false) newExp[exp] = dto[exp];
     }
 
-    const lastDisplayOrder = await this.expRepository.getLastDisplayOrder();
-    newExp['displayOrder'] = lastDisplayOrder + 1;
-
     if (dto.currentPosition) {
-      const haveCurrentPosition =
-        await this.expRepository.getLastCurrentPosition();
+      const haveCurrentPosition = await this.expRepository.hasCurrentPosition();
 
       if (haveCurrentPosition) {
         throw new BadRequestException(
@@ -338,11 +155,10 @@ export class ExperienceService {
     }
 
     expToEdit.updatedAt = new Date();
-    expToEdit.displayOrder = experience.displayOrder;
 
     if (dto.currentPosition) {
       const haveCurrentPosition =
-        await this.expRepository.getLastCurrentPosition();
+        await this.expRepository.hasCurrentPosition(id);
 
       if (haveCurrentPosition) {
         throw new BadRequestException(
@@ -382,8 +198,6 @@ export class ExperienceService {
     if (!expDeleted) {
       throw new BadRequestException(ExperienceError.EXPERIENCE_ERROR);
     }
-
-    await this.expRepository.decrementDisplayOrderFrom(experience.displayOrder);
 
     return ExperienceMessages.EXPERIENCE_REMOVED;
   }

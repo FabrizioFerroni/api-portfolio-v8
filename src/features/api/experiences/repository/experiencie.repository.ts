@@ -48,7 +48,11 @@ export class ExperiencieRepository
 
     const allExperiences: ExperienceDocument[] = await this.findAll(filter, {
       ...options,
-      sort: { displayOrder: 1 },
+      sort: {
+        currentPosition: -1,
+        endsDate: -1,
+        startsDate: -1,
+      },
     });
 
     const plainExperiences = allExperiences.map((exp) => exp.toObject());
@@ -59,9 +63,16 @@ export class ExperiencieRepository
   }
 
   async getAllExperiencesWithoutPagination(): Promise<ExperienceDocument[]> {
-    const allExp: ExperienceDocument[] = await this.findAll({
-      sort: { displayOrder: 1 },
-    });
+    const allExp: ExperienceDocument[] = await this.findAll(
+      {},
+      {
+        sort: {
+          currentPosition: -1,
+          endsDate: -1,
+          startsDate: -1,
+        },
+      },
+    );
     return allExp.map((exp: ExperienceDocument) => exp.toObject());
   }
 
@@ -77,19 +88,14 @@ export class ExperiencieRepository
     return { total, currentPosition, skills: skillsResult?.total ?? 0 };
   }
 
-  async getExperienceByDisplayOrder(
-    displayOrder: number,
-  ): Promise<ExperienceDocument | null> {
-    return this.experiencieModel
-      .findOne({ displayOrder })
-      .sort({ displayOrder: 1 })
-      .exec();
-  }
-
   async countExperiences(): Promise<number> {
     return this.experiencieModel
       .countDocuments()
-      .sort({ displayOrder: 1 })
+      .sort({
+        currentPosition: -1,
+        endsDate: -1,
+        startsDate: -1,
+      })
       .exec();
   }
 
@@ -145,6 +151,7 @@ export class ExperiencieRepository
 
     return true;
   }
+
   async deleteExperience(id: string): Promise<boolean> {
     const expDeleted: { deletedCount?: number } = await this.remove(id);
 
@@ -157,29 +164,14 @@ export class ExperiencieRepository
     return true;
   }
 
-  async decrementDisplayOrderFrom(deletedOrder: number): Promise<void> {
-    await this.experiencieModel.updateMany(
-      { displayOrder: { $gt: deletedOrder } },
-      { $inc: { displayOrder: -1 } },
-    );
-  }
+  async hasCurrentPosition(excludeId?: string): Promise<boolean> {
+    const query: FilterQuery<ExperienceDocument> = { currentPosition: true };
 
-  async getLastDisplayOrder(): Promise<number> {
-    const last = await this.experiencieModel
-      .findOne()
-      .sort({ displayOrder: -1 })
-      .select('displayOrder')
-      .lean();
+    if (excludeId) {
+      query._id = { $ne: new Types.ObjectId(excludeId) };
+    }
 
-    return last?.displayOrder ?? 0;
-  }
-
-  async getLastCurrentPosition(): Promise<boolean> {
-    const current = await this.experiencieModel
-      .findOne({ currentPosition: true })
-      .select('currentPosition')
-      .lean();
-
-    return !!current;
+    const exp = await this.model.findOne(query).lean();
+    return !!exp;
   }
 }

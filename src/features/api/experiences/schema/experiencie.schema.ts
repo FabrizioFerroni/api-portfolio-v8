@@ -24,8 +24,8 @@ export class Experience {
   @Prop({ type: [String], default: [] })
   skills: string[];
 
-  @Prop({ default: 0 })
-  displayOrder: number;
+  @Prop({ type: [String], default: [] })
+  achievements: string[];
 
   @Prop({ type: Date, default: Date.now })
   createdAt: Date;
