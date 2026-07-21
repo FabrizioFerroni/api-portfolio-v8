@@ -24,6 +24,9 @@ export class ProjectResponseDto {
   slug: string;
 
   @Expose()
+  category: string;
+
+  @Expose()
   visibility: string;
 
   @Expose()
@@ -36,6 +39,12 @@ export class ProjectResponseDto {
   imageFullUrl: string;
 
   @Expose()
+  urlGithub: string;
+
+  @Expose()
+  urlProyect: string;
+
+  @Expose()
   @Type(() => ProjectImageResponseDto)
   images: ProjectImageResponseDto[];
 
@@ -44,6 +53,132 @@ export class ProjectResponseDto {
   technologies: ProjectTechnologieResponseDto[];
 
   @Expose()
+  @Type(() => ProjectFeatureResponseDto)
+  features: ProjectFeatureResponseDto[];
+
+  @Exclude()
+  imagePath: string;
+
+  @Exclude()
+  createdAt: Date;
+
+  @Exclude()
+  updatedAt: Date | null;
+}
+
+export class ProjectResponseHomeDto {
+  @Expose({ name: 'id' })
+  @Transform(({ value }) => value.toString(), { toPlainOnly: true })
+  _id: string;
+
+  @Expose()
+  title: string;
+
+  @Expose()
+  summary: string;
+
+  @Exclude()
+  description: string;
+
+  @Exclude()
+  publishedDate: Date | null;
+
+  @Expose()
+  slug: string;
+
+  @Expose()
+  category: string;
+
+  @Expose()
+  visibility: string;
+
+  @Expose()
+  type: string;
+
+  @Expose()
+  imageUrl: string;
+
+  @Expose()
+  imageFullUrl: string;
+
+  @Expose()
+  urlGithub: string;
+
+  @Expose()
+  urlProyect: string;
+
+  @Exclude()
+  @Type(() => ProjectImageResponseDto)
+  images: ProjectImageResponseDto[];
+
+  @Expose()
+  @Type(() => ProjectTechnologieResponseDto)
+  technologies: ProjectTechnologieResponseDto[];
+
+  @Exclude()
+  @Type(() => ProjectFeatureResponseDto)
+  features: ProjectFeatureResponseDto[];
+
+  @Exclude()
+  imagePath: string;
+
+  @Exclude()
+  createdAt: Date;
+
+  @Exclude()
+  updatedAt: Date | null;
+}
+
+export class ProjectResponseRelatedDto {
+  @Expose({ name: 'id' })
+  @Transform(({ value }) => value.toString(), { toPlainOnly: true })
+  _id: string;
+
+  @Expose()
+  title: string;
+
+  @Expose()
+  summary: string;
+
+  @Exclude()
+  description: string;
+
+  @Exclude()
+  publishedDate: Date | null;
+
+  @Expose()
+  slug: string;
+
+  @Expose()
+  category: string;
+
+  @Expose()
+  visibility: string;
+
+  @Exclude()
+  type: string;
+
+  @Expose()
+  imageUrl: string;
+
+  @Expose()
+  imageFullUrl: string;
+
+  @Exclude()
+  urlGithub: string;
+
+  @Exclude()
+  urlProyect: string;
+
+  @Exclude()
+  @Type(() => ProjectImageResponseDto)
+  images: ProjectImageResponseDto[];
+
+  @Exclude()
+  @Type(() => ProjectTechnologieResponseDto)
+  technologies: ProjectTechnologieResponseDto[];
+
+  @Exclude()
   @Type(() => ProjectFeatureResponseDto)
   features: ProjectFeatureResponseDto[];
 

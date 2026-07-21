@@ -31,6 +31,10 @@ export class CreateNewProjectDto {
 
   @IsString()
   @IsNotEmpty()
+  category: string;
+
+  @IsString()
+  @IsNotEmpty()
   publishedDate: string;
 
   @IsString()

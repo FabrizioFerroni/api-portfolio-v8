@@ -53,6 +53,11 @@ export class ProjectTechnologyService {
     return this.transformArray(technologies);
   }
 
+  async getAllTechnologyNames(): Promise<string[]> {
+    const technologies = await this.techRepository.getAllTechnologies();
+    return technologies.map((tech) => tech.name);
+  }
+
   async getOneById(id: string): Promise<ProjectTechnologieResponseDto | null> {
     const technology: ProjectTechnologyDocument =
       await this.techRepository.getTechnologyById(id);

@@ -40,8 +40,17 @@ export class ProjectTechnologyRepository
   }
 
   async getAllTechnologies(): Promise<ProjectTechnologyDocument[] | null> {
-    const allTechnologies: ProjectTechnologyDocument[] = await this.findAll();
-    return ToList(allTechnologies);
+    return this.model.aggregate([
+      { $sort: { createdAt: 1 } },
+      {
+        $group: {
+          _id: { $toLower: '$name' },
+          doc: { $first: '$$ROOT' },
+        },
+      },
+      { $replaceRoot: { newRoot: '$doc' } },
+      { $sort: { name: 1 } },
+    ]);
   }
 
   async getTechnologyById(
@@ -69,6 +78,17 @@ export class ProjectTechnologyRepository
     return technology
       ? ToOne<ProjectTechnologyDocument, ProjectTechnologyDocument>(technology)
       : null;
+  }
+
+  async findByNames(
+    names: string[],
+  ): Promise<ProjectTechnologyDocument[] | null> {
+    const regexes = names.map((n) => new RegExp(`^${n}$`, 'i'));
+
+    const allTechnologies: ProjectTechnologyDocument[] = await this.findAll({
+      name: { $in: regexes },
+    });
+    return ToList(allTechnologies);
   }
 
   async technologyAlredyExist(

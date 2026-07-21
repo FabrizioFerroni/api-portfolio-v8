@@ -18,6 +18,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiQuery,
   ApiSecurity,
   ApiTags,
@@ -35,7 +36,11 @@ import { ErrorResponseDto } from '@/shared/utils/dtos/swagger/errorresponse.dto'
 import { OkResponseDto } from '@/shared/utils/dtos/swagger/okresponse.dto';
 import { CreateResponseDto } from '@/shared/utils/dtos/swagger/createresponse.dto';
 import { ApiKeyLogin } from '@/features/auth/decorators/apikey.decorator';
-import { PaginationDto } from '@/shared/utils/dtos/pagination.dto';
+import {
+  PaginationDto,
+  PaginationProjectDto,
+  PaginationProjectHomeDto,
+} from '@/shared/utils/dtos/pagination.dto';
 
 @Controller('projects')
 @ApiTags('Projectos Personales')
@@ -64,11 +69,86 @@ export class ProjectController {
     isArray: false,
     description: 'Internal Server Error',
   })
+  @ApiQuery({ name: 'page', type: 'number', required: false })
+  @ApiQuery({ name: 'limit', type: 'number', required: false })
+  @ApiQuery({ name: 'search', type: 'string', required: false })
+  @ApiQuery({ name: 'category', type: 'string', required: false })
+  @ApiQuery({ name: 'visibility', type: 'string', required: false })
+  @ApiQuery({
+    name: 'technologies',
+    type: 'string',
+    isArray: true,
+    required: false,
+  })
   @ApiOperation({ summary: 'Get all projects' })
   @ApiSecurity('api-key')
   @ApiKeyLogin()
-  async getAllProjects() {
-    return await this.projectService.getAllProyects();
+  async getAllProjects(@Query() param: PaginationProjectDto) {
+    return await this.projectService.getAllProyects(param);
+  }
+
+  @Get('home')
+  @ApiOkResponse({
+    type: OkResponseDto,
+    isArray: false,
+    description: 'Get all projects for home page',
+  })
+  @ApiBadRequestResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Bad Request',
+  })
+  @ApiUnauthorizedResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Unauthorized',
+  })
+  @ApiInternalServerErrorResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Internal Server Error',
+  })
+  @ApiOperation({ summary: 'Get all projects for home page' })
+  @ApiQuery({ name: 'category', type: 'string', required: false })
+  @ApiSecurity('api-key')
+  @ApiKeyLogin()
+  async getAllProjectsHome(@Query() param: PaginationProjectHomeDto) {
+    return await this.projectService.getAllProyectsHome(param);
+  }
+
+  @Get('related/:id')
+  @ApiOkResponse({
+    type: OkResponseDto,
+    isArray: false,
+    description: 'Get related projects for detail proyect',
+  })
+  @ApiBadRequestResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Bad Request',
+  })
+  @ApiUnauthorizedResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Unauthorized',
+  })
+  @ApiNotFoundResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Project not found',
+  })
+  @ApiInternalServerErrorResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Internal Server Error',
+  })
+  @ApiOperation({ summary: 'Get related projects for detail proyect' })
+  @ApiParam({ name: 'id', type: 'string', required: true })
+  @ApiSecurity('api-key')
+  @ApiKeyLogin()
+  async getRelatedProjects(@Param('id') id: string) {
+    console.log(id);
+    return await this.projectService.getRelatedProjects(id);
   }
 
   @Get('admin')

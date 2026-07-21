@@ -32,6 +32,10 @@ export class UpdateProjectDto {
 
   @IsString()
   @IsOptional()
+  category: string;
+
+  @IsString()
+  @IsOptional()
   publishedDate: string;
 
   @IsString()

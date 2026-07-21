@@ -8,6 +8,7 @@ import { ProjectTechnologyService } from './service/project-technology.service';
 import { ProjectTechnologyRepository } from './repository/project-technology.repository';
 import { IProjectTechnologyRepository } from './repository/project-technology.interface.repository';
 import { TransformDto } from '@/shared/utils';
+import { ProjectTechnologyController } from './controller/project-technology.controller';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { TransformDto } from '@/shared/utils';
       { name: ProjectTechnology.name, schema: ProjectTechnologySchema },
     ]),
   ],
+  controllers: [ProjectTechnologyController],
   providers: [
     ProjectTechnologyService,
     ProjectTechnologyRepository,

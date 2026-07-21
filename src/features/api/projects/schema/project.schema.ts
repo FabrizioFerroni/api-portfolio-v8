@@ -18,6 +18,9 @@ export class Project {
   @Prop({ required: true, trim: true })
   slug: string;
 
+  @Prop({ required: true, trim: true })
+  category: string;
+
   @Prop({ required: true, trim: true, default: 'public' })
   visibility: string;
 

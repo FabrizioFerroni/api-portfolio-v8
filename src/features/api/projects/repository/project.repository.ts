@@ -17,6 +17,13 @@ import {
   getPreviousMonthRange,
 } from '@/shared/utils/functions/date.utils';
 
+const SORT_MAP: Record<string, Record<string, 1 | -1>> = {
+  'date-desc': { date: -1 },
+  'date-asc': { date: 1 },
+  'name-asc': { title: 1 },
+  'name-desc': { title: -1 },
+};
+
 @Injectable()
 export class ProjectRepository
   extends MongoDBRepository<ProjectDocument>
@@ -58,6 +65,84 @@ export class ProjectRepository
         features: (featuresMap[id] ?? []).map((f) => f.toObject()), // 👈
       };
     });
+  }
+
+  async getAllProjectsWithFilter(
+    take: number,
+    skip: number,
+    search?: string | null,
+    category?: string | null,
+    visibility?: string | null,
+    technologies?: string[] | [],
+    sortBy?: string,
+  ): Promise<[ProjectWithRelations[] | null, number]> {
+    const normalizedCategory = category === 'all' ? null : category;
+    const normalizedVisibility = visibility === 'all' ? null : visibility;
+
+    const options: QueryOptions = {
+      sort: SORT_MAP[sortBy ?? 'date-desc'] ?? SORT_MAP['date-desc'],
+    };
+
+    if (typeof skip === 'number') options.skip = skip;
+    if (typeof take === 'number') options.limit = take;
+
+    const filter: FilterQuery<ProjectDocument> = {};
+
+    if (search) {
+      const regex = new RegExp(search, 'i');
+      filter.$or = [{ title: regex }];
+    }
+
+    if (normalizedCategory)
+      filter.category = new RegExp(`^${normalizedCategory}$`, 'i');
+    if (normalizedVisibility)
+      filter.visibility = new RegExp(`^${normalizedVisibility}$`, 'i');
+
+    if (technologies && technologies.length > 0) {
+      const matchingTechs =
+        await this.projectTechnologyRepository.findByNames(technologies);
+
+      const projectIdsWithTech = [
+        ...new Set(matchingTechs.map((t) => String(t.projectId))),
+      ];
+
+      // Si ninguna tech matchea, no hay resultados posibles -> cortar acá
+      if (projectIdsWithTech.length === 0) return [null, 0];
+
+      filter._id = { $in: projectIdsWithTech };
+    }
+
+    const allProjects: ProjectDocument[] = await this.findAll(filter, {
+      ...options,
+    });
+
+    if (!allProjects || allProjects.length === 0) return [null, 0];
+
+    const projectIds = allProjects.map((p) => p._id) as Types.ObjectId[];
+
+    const [images, technologiesRes, features] = await Promise.all([
+      this.projectImageRepository.findByProjectIds(projectIds),
+      this.projectTechnologyRepository.findByProjectIds(projectIds),
+      this.projectFeatureRepository.findByProjectIds(projectIds),
+    ]);
+
+    const imagesMap = groupBy(images, (i) => String(i.projectId));
+    const techMap = groupBy(technologiesRes, (t) => String(t.projectId));
+    const featuresMap = groupBy(features, (f) => String(f.projectId));
+
+    const result = allProjects.map((project) => {
+      const id = String(project._id);
+      return {
+        ...project.toObject(),
+        images: (imagesMap[id] ?? []).map((i) => i.toObject()),
+        technologies: (techMap[id] ?? []).map((t) => t.toObject()),
+        features: (featuresMap[id] ?? []).map((f) => f.toObject()),
+      };
+    });
+
+    const total = await this.model.countDocuments(filter);
+
+    return [result, total];
   }
 
   async getAllProjectsAdmin(
@@ -109,6 +194,33 @@ export class ProjectRepository
     const total = await this.model.countDocuments(filter);
 
     return [result, total];
+  }
+
+  async findRelated(
+    projectId: string,
+    category: string,
+    limit: number = 3,
+  ): Promise<ProjectWithRelations[]> {
+    const sameCategory = await this.projectModel
+      .find({ _id: { $ne: projectId }, category })
+      .limit(limit)
+      .exec();
+
+    let projects = sameCategory;
+
+    if (projects.length < limit) {
+      const remaining = limit - projects.length;
+      const excludeIds = [projectId, ...projects.map((p) => p._id.toString())];
+
+      const differentCategory = await this.projectModel
+        .find({ _id: { $nin: excludeIds } })
+        .limit(remaining)
+        .exec();
+
+      projects = [...projects, ...differentCategory];
+    }
+
+    return this.populateProjects(projects);
   }
 
   async count(): Promise<number> {
@@ -254,5 +366,36 @@ export class ProjectRepository
       technologies: technologies.map((t) => t.toObject()),
       features: features.map((f) => f.toObject()),
     };
+  }
+
+  private async populateProjects(
+    projects: ProjectDocument[],
+  ): Promise<ProjectWithRelations[]> {
+    if (projects.length === 0) return [];
+
+    const projectIds = projects.map((p) => p._id as Types.ObjectId);
+
+    const [images, technologies, features] = await Promise.all([
+      this.projectImageRepository.findByProjectIds(projectIds),
+      this.projectTechnologyRepository.findByProjectIds(projectIds),
+      this.projectFeatureRepository.findByProjectIds(projectIds),
+    ]);
+
+    return projects.map((project) => {
+      const projectId = (project._id as Types.ObjectId).toString();
+
+      return {
+        ...project.toObject(),
+        images: images
+          .filter((i) => i.projectId.toString() === projectId)
+          .map((i) => i.toObject()),
+        technologies: technologies
+          .filter((t) => t.projectId.toString() === projectId)
+          .map((t) => t.toObject()),
+        features: features
+          .filter((f) => f.projectId.toString() === projectId)
+          .map((f) => f.toObject()),
+      };
+    });
   }
 }
