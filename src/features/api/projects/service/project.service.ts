@@ -446,8 +446,6 @@ export class ProjectService {
       ),
     );
 
-    console.log(results);
-
     const failed = results.filter((r) => r.status === 'rejected');
     if (failed.length > 0) {
       this.logger.warn(`${failed.length} technology fallaron al crear`);

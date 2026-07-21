@@ -147,7 +147,6 @@ export class ProjectController {
   @ApiSecurity('api-key')
   @ApiKeyLogin()
   async getRelatedProjects(@Param('id') id: string) {
-    console.log(id);
     return await this.projectService.getRelatedProjects(id);
   }
 
