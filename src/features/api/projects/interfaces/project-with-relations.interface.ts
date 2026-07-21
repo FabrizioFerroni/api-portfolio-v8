@@ -10,6 +10,7 @@ export interface ProjectWithRelations {
   publishedDate: Date | null;
   slug: string;
   isFeatured: boolean;
+  category: string;
   imageUrl: string;
   imageFullUrl: string;
   imagePath: string;

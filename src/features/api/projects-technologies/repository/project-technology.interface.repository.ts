@@ -17,6 +17,9 @@ export abstract class IProjectTechnologyRepository extends MongoDBRepository<Pro
   abstract getTechnologyByName(
     name: string,
   ): Promise<ProjectTechnologyDocument | null>;
+  abstract findByNames(
+    names: string[],
+  ): Promise<ProjectTechnologyDocument[] | null>;
   abstract technologyAlredyExist(
     name: string,
     projectId: string,

@@ -6,11 +6,25 @@ import { ProjectWithRelations } from '../interfaces/project-with-relations.inter
 @Injectable()
 export abstract class IProjectRepository extends MongoDBRepository<ProjectDocument> {
   abstract getAllProjects(): Promise<ProjectWithRelations[] | null>;
+  abstract getAllProjectsWithFilter(
+    take: number,
+    skip: number,
+    search?: string | null,
+    category?: string | null,
+    visibility?: string | null,
+    technologies?: string[] | [],
+    sortBy?: string,
+  ): Promise<[ProjectWithRelations[] | null, number]>;
   abstract getAllProjectsAdmin(
     take: number,
     skip: number,
     search?: string | null,
   ): Promise<[ProjectWithRelations[] | null, number]>;
+  abstract findRelated(
+    projectId: string,
+    category: string,
+    limit?: number,
+  ): Promise<ProjectWithRelations[]>;
   abstract count(): Promise<number>;
   abstract getProjectById(id: string): Promise<ProjectWithRelations | null>;
   abstract getProjectBySlug(slug): Promise<ProjectWithRelations | null>;

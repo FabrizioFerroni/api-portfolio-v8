@@ -1,6 +1,10 @@
 import { TransformDto } from '@/shared/utils';
 import { Project, ProjectDocument } from '../schema/project.schema';
-import { ProjectResponseDto } from '../dto/response/project.response.dto';
+import {
+  ProjectResponseDto,
+  ProjectResponseHomeDto,
+  ProjectResponseRelatedDto,
+} from '../dto/response/project.response.dto';
 import { IProjectRepository } from '../repository/project.interface.repository';
 import {
   BadRequestException,
@@ -32,7 +36,11 @@ import { ProjectFeatureService } from '../../projects-features/service/project-f
 import { ProjectTechnologyService } from '../../projects-technologies/service/project-technology.service';
 import { InsertOrUpdateProjectTecDto } from '../../projects-technologies/dto/insert-update.dto';
 import { DeleteProjectTechFeat } from '../dto/delete-project-feat-tech.dto';
-import { PaginationDto } from '@/shared/utils/dtos/pagination.dto';
+import {
+  PaginationDto,
+  PaginationProjectDto,
+  PaginationProjectHomeDto,
+} from '@/shared/utils/dtos/pagination.dto';
 import { DefaultPageSize } from '@/shared/utils/constants/querying';
 import { PaginationService } from '@/core/services/pagination.service';
 import { PaginationMeta } from '@/core/interfaces/pagination-meta.interface';
@@ -63,15 +71,96 @@ export class ProjectService {
     return this.transformDto.transformDtoArray(data, ProjectResponseDto);
   }
 
+  transformArrayHome(data: ProjectWithRelations[]): ProjectResponseHomeDto[] {
+    if (!Array.isArray(data)) return [];
+    return this.transformDto.transformDtoArray(data, ProjectResponseHomeDto);
+  }
+
+  transformArrayRelated(
+    data: ProjectWithRelations[],
+  ): ProjectResponseRelatedDto[] {
+    if (!Array.isArray(data)) return [];
+    return this.transformDto.transformDtoArray(data, ProjectResponseRelatedDto);
+  }
+
   transformObject(data: ProjectWithRelations): ProjectResponseDto {
     return this.transformDto.transformDtoObject(data, ProjectResponseDto);
   }
 
-  async getAllProyects(): Promise<ProjectResponseDto[]> {
-    const allProyects: ProjectWithRelations[] =
-      await this.projectRepository.getAllProjects();
+  async getAllProyects(
+    param: PaginationProjectDto,
+  ): Promise<{ projects: ProjectResponseDto[]; meta: PaginationMeta }> {
+    const { page, limit, search, category, visibility, technologies, sortBy } =
+      param;
 
-    return this.transformArray(allProyects);
+    const take = limit ?? DefaultPageSize.PROJECTS;
+    const skip = this.paginationService.calculateOffset(limit, page);
+
+    const [data, count] = await this.projectRepository.getAllProjectsWithFilter(
+      take,
+      skip,
+      search,
+      category,
+      visibility,
+      technologies,
+      sortBy,
+    );
+
+    const projects: ProjectResponseDto[] = this.transformArray(data);
+
+    const meta = this.paginationService.createMeta(limit, page, count);
+
+    const response = { projects, meta };
+
+    return response;
+  }
+
+  async getRelatedProjects(id: string): Promise<ProjectResponseRelatedDto[]> {
+    const project = await this.projectRepository.getProjectById(id);
+
+    if (!project) {
+      throw new NotFoundException(ProjectError.PROJECT_NOT_FOUND);
+    }
+
+    const relatedProject = await this.projectRepository.findRelated(
+      project.id,
+      project.category,
+    );
+
+    return this.transformArrayRelated(relatedProject);
+  }
+
+  async getAllProyectsHome(
+    param: PaginationProjectHomeDto,
+  ): Promise<ProjectResponseHomeDto[]> {
+    const { category: categoryFilter } = param;
+
+    let category = '';
+
+    const take = 6;
+    const page = 1;
+    const skip = this.paginationService.calculateOffset(take, page);
+
+    if (categoryFilter === null || categoryFilter === undefined) {
+      category = null;
+    }
+
+    if (categoryFilter === 'all') {
+      category = null;
+    } else {
+      category = categoryFilter;
+    }
+
+    const [data] = await this.projectRepository.getAllProjectsWithFilter(
+      take,
+      skip,
+      '',
+      category,
+    );
+
+    const projects: ProjectResponseHomeDto[] = this.transformArrayHome(data);
+
+    return projects;
   }
 
   async getAllProyectsAdmin(
