@@ -18,6 +18,9 @@ export class SettingResponseDto {
   @Expose()
   maintenanceMode: boolean;
 
+  @Expose()
+  showTestimonials: boolean;
+
   @Exclude()
   createdAt: Date;
 

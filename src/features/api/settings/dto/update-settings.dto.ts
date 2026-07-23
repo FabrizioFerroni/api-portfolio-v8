@@ -23,4 +23,10 @@ export class UpdateSettingDto {
   @IsDefined()
   @ApiProperty({ example: false })
   maintenanceMode: boolean;
+
+  @IsNotEmpty()
+  @IsBoolean()
+  @IsDefined()
+  @ApiProperty({ example: false })
+  showTestimonials: boolean;
 }
