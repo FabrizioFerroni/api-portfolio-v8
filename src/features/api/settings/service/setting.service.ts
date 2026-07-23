@@ -36,6 +36,7 @@ export class SettingService implements OnApplicationBootstrap {
       settings = await this.settingRepository.upsert({
         frontUrl: 'http://localhost:4200',
         maintenanceMode: false,
+        showTestimonials: false,
         createdAt: new Date(),
       });
 
@@ -54,6 +55,7 @@ export class SettingService implements OnApplicationBootstrap {
     const settingToEdit: Partial<Setting> = {
       frontUrl: data.frontUrl,
       maintenanceMode: data.maintenanceMode,
+      showTestimonials: data.showTestimonials,
       updatedAt: new Date(),
     };
 

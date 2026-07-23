@@ -9,6 +9,9 @@ export class Setting {
   @Prop({ required: true, default: false })
   maintenanceMode: boolean;
 
+  @Prop({ required: true, default: false })
+  showTestimonials: boolean;
+
   @Prop({ type: Date, default: Date.now })
   createdAt: Date;
 
