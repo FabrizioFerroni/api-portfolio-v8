@@ -196,6 +196,40 @@ export class ProjectRepository
     return [result, total];
   }
 
+  async getProjectsByIds(ids: string[]): Promise<ProjectWithRelations[]> {
+    const allProjects: ProjectDocument[] = await this.findAll({
+      _id: { $in: ids },
+    });
+
+    if (!allProjects || allProjects.length === 0) return [];
+
+    const projectIds = allProjects.map((p) => p._id) as Types.ObjectId[];
+
+    const [images, technologies, features] = await Promise.all([
+      this.projectImageRepository.findByProjectIds(projectIds),
+      this.projectTechnologyRepository.findByProjectIds(projectIds),
+      this.projectFeatureRepository.findByProjectIds(projectIds),
+    ]);
+
+    const imagesMap = groupBy(images, (i) => String(i.projectId));
+    const techMap = groupBy(technologies, (t) => String(t.projectId));
+    const featuresMap = groupBy(features, (f) => String(f.projectId));
+
+    const result: ProjectWithRelations[] = allProjects.map((project) => {
+      const id = String(project._id);
+      const plain = project.toObject();
+
+      return {
+        ...plain,
+        images: (imagesMap[id] ?? []).map((i) => i.toObject()),
+        technologies: (techMap[id] ?? []).map((t) => t.toObject()),
+        features: (featuresMap[id] ?? []).map((f) => f.toObject()),
+      } as ProjectWithRelations;
+    });
+
+    return result;
+  }
+
   async findRelated(
     projectId: string,
     category: string,

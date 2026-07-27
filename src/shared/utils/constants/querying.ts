@@ -9,4 +9,5 @@ export const DefaultPageSize = {
   AUDITS: 10,
   EXPERIENCES: 10,
   PROJECTS: 10,
+  TESTIMONIALS: 10,
 } as const satisfies Record<string, number>;
