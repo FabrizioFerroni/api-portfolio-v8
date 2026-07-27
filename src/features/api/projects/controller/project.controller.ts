@@ -116,6 +116,32 @@ export class ProjectController {
     return await this.projectService.getAllProyectsHome(param);
   }
 
+  @Get('select')
+  @ApiOkResponse({
+    type: OkResponseDto,
+    isArray: false,
+    description: 'Get all projects for select inn admin panel',
+  })
+  @ApiBadRequestResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Bad Request',
+  })
+  @ApiUnauthorizedResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Unauthorized',
+  })
+  @ApiInternalServerErrorResponse({
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Internal Server Error',
+  })
+  @ApiOperation({ summary: 'Get all projects for select in admin panel' })
+  async getAllProjectsSelect() {
+    return await this.projectService.getAllProjectsSelect();
+  }
+
   @Get('related/:id')
   @ApiOkResponse({
     type: OkResponseDto,

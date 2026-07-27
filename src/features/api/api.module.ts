@@ -8,6 +8,7 @@ import { ProjectModule } from './projects/projects.module';
 import { SettingsModule } from './settings/settings.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { PortfolioViewModule } from './portfolioviews/portfolioviews.module';
+import { TestimonialModule } from './testimonials/testimonials.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { PortfolioViewModule } from './portfolioviews/portfolioviews.module';
     UserModule,
     ProjectModule,
     SettingsModule,
+    TestimonialModule,
   ],
   exports: [
     PortfolioViewModule,
@@ -31,6 +33,7 @@ import { PortfolioViewModule } from './portfolioviews/portfolioviews.module';
     UserModule,
     ProjectModule,
     SettingsModule,
+    TestimonialModule,
   ],
 })
 export class ApiModule {}

@@ -191,3 +191,66 @@ export class ProjectResponseRelatedDto {
   @Exclude()
   updatedAt: Date | null;
 }
+
+export class ProjectResponseSelectDto {
+  @Expose({ name: 'id' })
+  @Transform(({ value }) => value.toString(), { toPlainOnly: true })
+  _id: string;
+
+  @Expose()
+  title: string;
+
+  @Expose()
+  category: string;
+
+  @Exclude()
+  summary: string;
+
+  @Exclude()
+  description: string;
+
+  @Exclude()
+  publishedDate: Date | null;
+
+  @Exclude()
+  slug: string;
+
+  @Exclude()
+  visibility: string;
+
+  @Exclude()
+  type: string;
+
+  @Exclude()
+  imageUrl: string;
+
+  @Exclude()
+  imageFullUrl: string;
+
+  @Exclude()
+  urlGithub: string;
+
+  @Exclude()
+  urlProyect: string;
+
+  @Exclude()
+  @Type(() => ProjectImageResponseDto)
+  images: ProjectImageResponseDto[];
+
+  @Exclude()
+  @Type(() => ProjectTechnologieResponseDto)
+  technologies: ProjectTechnologieResponseDto[];
+
+  @Exclude()
+  @Type(() => ProjectFeatureResponseDto)
+  features: ProjectFeatureResponseDto[];
+
+  @Exclude()
+  imagePath: string;
+
+  @Exclude()
+  createdAt: Date;
+
+  @Exclude()
+  updatedAt: Date | null;
+}

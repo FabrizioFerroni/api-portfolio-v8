@@ -4,6 +4,7 @@ import {
   ProjectResponseDto,
   ProjectResponseHomeDto,
   ProjectResponseRelatedDto,
+  ProjectResponseSelectDto,
 } from '../dto/response/project.response.dto';
 import { IProjectRepository } from '../repository/project.interface.repository';
 import {
@@ -46,6 +47,7 @@ import { PaginationService } from '@/core/services/pagination.service';
 import { PaginationMeta } from '@/core/interfaces/pagination-meta.interface';
 import { ProjectImageService } from '../../projects-images/service/project-image.service';
 import { ProjectStatsResponseDto } from '../dto/response/project-stats.response.dto';
+import { response } from 'express';
 
 @Injectable()
 export class ProjectService {
@@ -63,12 +65,23 @@ export class ProjectService {
       ProjectWithRelations,
       ProjectResponseDto
     >,
+    private readonly transformDto2: TransformDto<
+      ProjectWithRelations,
+      ProjectResponseSelectDto
+    >,
     private readonly paginationService: PaginationService,
   ) {}
 
   transformArray(data: ProjectWithRelations[]): ProjectResponseDto[] {
     if (!Array.isArray(data)) return [];
     return this.transformDto.transformDtoArray(data, ProjectResponseDto);
+  }
+
+  transformArraySelect(
+    data: ProjectWithRelations[],
+  ): ProjectResponseSelectDto[] {
+    if (!Array.isArray(data)) return [];
+    return this.transformDto2.transformDtoArray(data, ProjectResponseSelectDto);
   }
 
   transformArrayHome(data: ProjectWithRelations[]): ProjectResponseHomeDto[] {
@@ -186,6 +199,12 @@ export class ProjectService {
     return response;
   }
 
+  async getAllProjectsSelect(): Promise<ProjectResponseSelectDto[]> {
+    const allProjects = await this.projectRepository.getAllProjects();
+
+    return this.transformArraySelect(allProjects);
+  }
+
   async getStats(): Promise<ProjectStatsResponseDto> {
     const [total, totalFront, totalBack, totalImgs] = await Promise.all([
       this.projectRepository.count(), // del base repo
@@ -205,6 +224,12 @@ export class ProjectService {
     }
 
     return this.transformObject(project);
+  }
+
+  async getProjectByIds(id: string[]): Promise<ProjectResponseDto[]> {
+    const projects = await this.projectRepository.getProjectsByIds(id);
+
+    return this.transformArray(projects);
   }
 
   async getProjectBySlug(slug: string): Promise<ProjectResponseDto> {
