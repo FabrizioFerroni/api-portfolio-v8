@@ -18,6 +18,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiQuery,
+  ApiSecurity,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -33,6 +34,7 @@ import { CreateResponseDto } from '@/shared/utils/dtos/swagger/createresponse.dt
 import { UpdateTestimonialDto } from '../dto/update-testimonial.dto';
 import { TestimonialCount } from '../interfaces/testimonial-count.interface';
 import { TestimonialResponseDto } from '../dto/response/testimonial-response.dto';
+import { ApiKeyLogin } from '@/features/auth/decorators/apikey.decorator';
 
 @Controller('testimonials')
 @ApiTags('Testimonios de clientes')
@@ -61,6 +63,8 @@ export class TestimonialController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Get all testimonials for home' })
+  @ApiSecurity('api-key')
+  @ApiKeyLogin()
   async getAllTestimonialsHome(): Promise<TestimonialResponseDto[]> {
     return await this.testimonialService.getAllTestimonialsHome();
   }

@@ -138,6 +138,8 @@ export class ProjectController {
     description: 'Internal Server Error',
   })
   @ApiOperation({ summary: 'Get all projects for select in admin panel' })
+  @Authorize()
+  @ApiBearerAuth()
   async getAllProjectsSelect() {
     return await this.projectService.getAllProjectsSelect();
   }
