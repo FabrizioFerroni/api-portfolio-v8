@@ -3,6 +3,7 @@ import {
   IsArray,
   IsBoolean,
   IsDate,
+  IsIn,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -15,6 +16,7 @@ import {
 import { InsertOrUpdateProjectFeatDto } from '../../projects-features/dto/insert-update.dto';
 import { InsertOrUpdateProjectTecDto } from '../../projects-technologies/dto/insert-update.dto';
 import { plainToInstance, Transform, Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateNewProjectDto {
   @IsString()
@@ -36,6 +38,11 @@ export class CreateNewProjectDto {
   @IsString()
   @IsNotEmpty()
   publishedDate: string;
+
+  @IsIn(['true', 'false'])
+  @IsNotEmpty()
+  @ApiProperty({ example: 'false' })
+  isPublished: string;
 
   @IsString()
   @Type(() => String)

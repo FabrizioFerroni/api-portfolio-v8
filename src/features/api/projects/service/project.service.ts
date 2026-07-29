@@ -259,7 +259,9 @@ export class ProjectService {
       await this.projectRepository.projectAlredyExist(dto.title);
 
     if (projectAlreadyExist) {
-      throw new BadRequestException(ProjectError.PROJECT_ERROR);
+      throw new BadRequestException(
+        'Ya hay un proyecto con ese nombre registrado, por favor busca ese proyecto y editalo o borralo y crea uno de nuevo',
+      );
     }
 
     const newProject: Partial<Project> = {};
@@ -268,11 +270,18 @@ export class ProjectService {
       if (dto[proj] ?? false) newProject[proj] = dto[proj];
     }
 
-    newProject.publishedDate = parse(
-      dto.publishedDate,
-      'dd/MM/yyyy',
-      new Date(),
-    );
+    if (dto.isPublished === 'true') {
+      newProject.publishedDate = parse(
+        dto.publishedDate,
+        'dd/MM/yyyy',
+        new Date(),
+      );
+
+      newProject.isPublished = true;
+    } else {
+      newProject.isPublished = false;
+      newProject.publishedDate = null;
+    }
 
     newProject.slug = slug;
 
@@ -317,7 +326,9 @@ export class ProjectService {
       await this.projectRepository.projectAlredyExist(dto.title, id);
 
     if (projectAlreadyExist) {
-      throw new BadRequestException(ProjectError.PROJECT_ERROR);
+      throw new BadRequestException(
+        'Ya hay un proyecto con ese nombre registrado, por favor busca ese proyecto y editalo o borralo y crea uno de nuevo',
+      );
     }
 
     if (file) {
@@ -337,11 +348,19 @@ export class ProjectService {
       }
     }
 
-    projToEdit.publishedDate = parse(
-      dto.publishedDate,
-      'dd/MM/yyyy',
-      new Date(),
-    );
+    if (dto.isPublished === 'true') {
+      projToEdit.publishedDate = parse(
+        dto.publishedDate,
+        'dd/MM/yyyy',
+        new Date(),
+      );
+
+      projToEdit.isPublished = true;
+    } else {
+      projToEdit.isPublished = false;
+      projToEdit.publishedDate = null;
+    }
+
     projToEdit.updatedAt = new Date();
 
     if (dto.deleteDataFT.length > 0) {

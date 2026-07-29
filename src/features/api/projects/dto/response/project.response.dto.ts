@@ -21,6 +21,9 @@ export class ProjectResponseDto {
   publishedDate: Date | null;
 
   @Expose()
+  isPublished: boolean;
+
+  @Expose()
   slug: string;
 
   @Expose()
@@ -82,6 +85,9 @@ export class ProjectResponseHomeDto {
 
   @Exclude()
   publishedDate: Date | null;
+
+  @Exclude()
+  isPublished: boolean;
 
   @Expose()
   slug: string;
@@ -145,6 +151,9 @@ export class ProjectResponseRelatedDto {
 
   @Exclude()
   publishedDate: Date | null;
+
+  @Exclude()
+  isPublished: boolean;
 
   @Expose()
   slug: string;
@@ -211,6 +220,9 @@ export class ProjectResponseSelectDto {
 
   @Exclude()
   publishedDate: Date | null;
+
+  @Exclude()
+  isPublished: boolean;
 
   @Exclude()
   slug: string;
