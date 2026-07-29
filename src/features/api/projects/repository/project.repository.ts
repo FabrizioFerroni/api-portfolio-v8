@@ -40,7 +40,11 @@ export class ProjectRepository
   }
 
   async getAllProjects(): Promise<ProjectWithRelations[] | null> {
-    const allProjects = await this.findAll();
+    const filter: FilterQuery<ProjectDocument> = {};
+
+    filter.isPublished = true;
+
+    const allProjects = await this.findAll(filter);
 
     if (!allProjects || allProjects.length === 0) return null;
 
@@ -87,6 +91,8 @@ export class ProjectRepository
     if (typeof take === 'number') options.limit = take;
 
     const filter: FilterQuery<ProjectDocument> = {};
+
+    filter.isPublished = true;
 
     if (search) {
       const regex = new RegExp(search, 'i');

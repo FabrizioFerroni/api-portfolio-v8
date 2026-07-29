@@ -15,6 +15,9 @@ export class Project {
   @Prop({ type: Date, default: null })
   publishedDate: Date | null;
 
+  @Prop({ type: Boolean, required: true, default: false })
+  isPublished: boolean;
+
   @Prop({ required: true, trim: true })
   slug: string;
 
