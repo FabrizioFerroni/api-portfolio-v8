@@ -20,6 +20,7 @@ export const configApp = (): ConfigApp => {
     },
     passPrivateKey: process.env.PASSWORD_PRIVATE_KEY || '',
     pathPrivateKey: process.env.PATH_PRIVATE_KEY || '',
+    privateKey: process.env.PRIVATE_KEY || '',
     secret_jwt_register: process.env.SECRET_JWT_REGISTER || '',
     secret_jwt: process.env.SECRET_JWT || '',
     secret_jwt_refresh: process.env.SECRET_JWT_REFRESH || '',

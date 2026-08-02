@@ -6,6 +6,7 @@ export type ConfigApp = {
   database: DbConfig;
   passPrivateKey: string;
   pathPrivateKey: string;
+  privateKey?: string;
   secret_jwt_register: string;
   secret_jwt: string;
   secret_jwt_refresh: string;
