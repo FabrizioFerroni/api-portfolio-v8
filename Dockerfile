@@ -23,6 +23,9 @@ COPY --from=builder /usr/src/app/dist ./dist
 RUN mkdir -p /uploads/temp && chown -R node:node /uploads
 RUN mkdir -p /logs && chown -R node:node /logs
 RUN mkdir -p /usr/src/app/logs && chown -R node:node /usr/src/app/logs
+RUN mkdir -p /usr/src/app/uploads && chown -R node:node /usr/src/app/uploads
+RUN mkdir -p /usr/src/app/uploads/temp && chown -R node:node /usr/src/app/uploads/temp
+
 USER node
 
 EXPOSE 8080
