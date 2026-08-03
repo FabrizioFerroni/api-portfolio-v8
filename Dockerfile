@@ -21,6 +21,7 @@ RUN npm clean-install --omit=dev && npm cache clean --force
 COPY --from=builder /usr/src/app/dist ./dist
 
 RUN mkdir -p /uploads/temp && chown -R node:node /uploads
+RUN mkdir -p /logs && chown -R node:node /logs
 
 USER node
 
