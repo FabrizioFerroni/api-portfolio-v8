@@ -32,26 +32,44 @@ export class MailQeueService implements OnModuleInit, OnModuleDestroy {
     const port: number = this.configService.get<number>('RABBITMQ_PORT');
 
     this.connectUri = `${protocol}://${username}:${password}@${host}:${port}`;
+
+    this.logger.debug(
+      `RabbitMQ target: ${protocol}://${username}@${host}:${port}`,
+    );
   }
 
   async onModuleInit(): Promise<void> {
     this.logger.log('Conectando a RabbitMQ...');
 
-    this.connection = amqp.connect([this.connectUri]);
+    this.connection = amqp.connect([this.connectUri], {
+      connectionOptions: { timeout: 10000 },
+    });
+
+    this.connection.on('connect', () =>
+      this.logger.log('Conectado a RabbitMQ'),
+    );
+    this.connection.on('disconnect', (err) =>
+      this.logger.error('Desconectado/fallo de conexión a RabbitMQ', err?.err),
+    );
+    this.connection.on('connectFailed', ({ err }) =>
+      this.logger.error('Fallo al conectar a RabbitMQ', err),
+    );
+
     this.channel = this.connection.createChannel({
       setup: async (_channel: ConfirmChannel): Promise<void> => {
         this.logger.log('Canal de RabbitMQ creado y listo');
       },
     });
 
-    this.connection.on('connect', (): void =>
-      this.logger.log('Conectado a RabbitMQ'),
-    );
-    this.connection.on('disconnect', (err: { err: Error }): void =>
-      this.logger.error('Desconectado de RabbitMQ', err?.err),
-    );
-
-    await this.channel.waitForConnect();
+    await Promise.race([
+      this.channel.waitForConnect(),
+      new Promise((_, reject) =>
+        setTimeout(
+          () => reject(new Error('Timeout conectando a RabbitMQ')),
+          15000,
+        ),
+      ),
+    ]);
   }
 
   async onModuleDestroy(): Promise<void> {
@@ -59,12 +77,14 @@ export class MailQeueService implements OnModuleInit, OnModuleDestroy {
     try {
       await this.channel.close();
     } catch (err) {
-      this.logger.warn('Canal ya cerrado:', err?.message);
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.warn('Canal ya cerrado:', message);
     }
     try {
       await this.connection.close();
     } catch (err) {
-      this.logger.warn('Conexión ya cerrada:', err?.message);
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.warn('Conexión ya cerrada:', message);
     }
   }
 
@@ -178,7 +198,7 @@ export class MailQeueService implements OnModuleInit, OnModuleDestroy {
     try {
       requeue ? channel.nack(message, false, true) : channel.ack(message);
     } catch (err) {
-      if (err?.message === 'Channel closed') {
+      if (err instanceof Error && err?.message === 'Channel closed') {
         this.logger.warn(
           `Canal cerrado al intentar ${requeue ? 'nack' : 'ack'}, ignorando...`,
         );
