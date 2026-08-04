@@ -28,6 +28,6 @@ RUN mkdir -p /usr/src/app/uploads/temp && chown -R node:node /usr/src/app/upload
 
 USER node
 
-EXPOSE 8080
+EXPOSE 3000
 
 CMD ["node", "dist/main"]
