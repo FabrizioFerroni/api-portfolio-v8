@@ -6,9 +6,9 @@ import { setupSwagger } from './config/swagger/config.swagger.app';
 import { configStrings } from './config/app/config.string';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import cookieParser = require('cookie-parser');
 
 async function bootstrap() {
-  /* const app = await NestFactory.create(AppModule); */
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const hostCors = configApp().frontHost;
   const hostMethods = configApp().hostMethod;
@@ -18,6 +18,7 @@ async function bootstrap() {
   const apiPort = configApp().apiPort;
   const apiHost = configApp().apiHost;
   const tz = configApp().tz;
+  app.use(cookieParser());
 
   app.enableCors({
     origin: hostCors,
@@ -27,8 +28,6 @@ async function bootstrap() {
   });
 
   app.set('trust proxy', true);
-
-  /* app.useGlobalFilters(new CustomExceptionFilter()); */
 
   app.use((req, res, next) => {
     req.timezone = tz;

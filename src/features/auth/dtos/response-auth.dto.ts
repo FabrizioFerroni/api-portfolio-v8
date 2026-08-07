@@ -20,6 +20,9 @@ export class AuthResponseDto {
   @Expose()
   avatar: string;
 
+  @Expose()
+  tokenVersion: number;
+
   @Exclude()
   createdAt: Date;
 
@@ -32,6 +35,6 @@ export class AuthResponseDto {
   @Expose()
   access_token: string;
 
-  @Expose()
+  @Exclude()
   refresh_token: string;
 }

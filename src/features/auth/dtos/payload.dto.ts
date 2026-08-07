@@ -1,4 +1,11 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { AuthMessagesError } from '../errors/error-messages';
 
 export class PayloadDto {
@@ -9,4 +16,12 @@ export class PayloadDto {
   @IsString()
   @IsOptional()
   id?: string;
+
+  @IsNumber()
+  @IsOptional()
+  tokenVersion?: number;
+
+  @IsOptional()
+  @IsIn(['true', 'false'])
+  rememberMe?: boolean;
 }

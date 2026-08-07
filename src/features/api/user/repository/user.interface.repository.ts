@@ -13,4 +13,5 @@ export abstract class IUserRepository extends MongoDBRepository<UserDocument> {
   abstract createUser(data: User): Promise<User>;
   abstract updateUser(id: string, user: Partial<User>): Promise<boolean>;
   abstract removeUser(id: string): Promise<boolean>;
+  abstract incrementTokenVersion(id: string): Promise<boolean>;
 }

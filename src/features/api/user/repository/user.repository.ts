@@ -84,4 +84,17 @@ export class UserRepository
 
     return true;
   }
+
+  async incrementTokenVersion(id: string): Promise<boolean> {
+    const result = await this.userModel.updateOne(
+      { _id: new ObjectId(id) },
+      { $inc: { tokenVersion: 1 } },
+    );
+
+    if (!result.acknowledged || result.modifiedCount !== 1) {
+      throw new InternalServerErrorException(UserError.INTERNAL_SERVER_ERROR);
+    }
+
+    return true;
+  }
 }
