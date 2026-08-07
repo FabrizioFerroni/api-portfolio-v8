@@ -1,27 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import * as Forge from 'node-forge';
 import { ConfigService } from '@nestjs/config';
+import { LoginDto } from '../dtos/login.dto';
 
 @Injectable()
 export class DecryptCredentialsService {
   private cipher: string;
   private randomKey: string;
   private iv: string;
-  private credentialsUser: string;
+  private credentialsCipherText: string;
   private privateKey: string;
 
   constructor(private configService: ConfigService) {}
 
-  public main(credentials: string) {
+  public main<T = LoginDto>(credentials: string): T {
     this.cipher = credentials;
 
     this.splitStringCipher();
     this.decodeBase64Fields();
     this.readPrivateKey();
     this.decryptRandomKey();
-    this.decryptCredentialsUser();
 
-    return this.credentialsUser;
+    return this.decryptCredentialsUser<T>();
   }
 
   private splitStringCipher() {
@@ -33,7 +33,7 @@ export class DecryptCredentialsService {
 
     this.randomKey = cipherSplit[0];
     this.iv = cipherSplit[1];
-    this.credentialsUser = cipherSplit[2];
+    this.credentialsCipherText = cipherSplit[2];
   }
 
   private decodeBase64Fields() {
@@ -55,8 +55,8 @@ export class DecryptCredentialsService {
     this.randomKey = keydecrypt.decrypt(this.randomKey, 'RSA-OAEP');
   }
 
-  private decryptCredentialsUser() {
-    const combined = Forge.util.decode64(this.credentialsUser);
+  private decryptCredentialsUser<T>(): T {
+    const combined = Forge.util.decode64(this.credentialsCipherText);
     const tag = combined.slice(-16);
     const cipherText = combined.slice(0, -16);
 
@@ -69,7 +69,7 @@ export class DecryptCredentialsService {
       throw new Error('Credenciales alteradas o clave incorrecta');
     }
 
-    this.credentialsUser = JSON.parse(decipher.output.toString());
+    return JSON.parse(decipher.output.toString()) as T;
   }
 
   get splitCipher() {

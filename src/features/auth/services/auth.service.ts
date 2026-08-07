@@ -95,37 +95,52 @@ export class AuthService {
    * @throws UnauthorizedException - If the provided refresh token is invalid.
    * @returns A new access token if the refresh token is valid.
    */
-  refresh({ token }: RefreshtokenDto) {
-    const tokenOld = this.tokenService.verifyTokenCatch(
+  async refresh({ token }: RefreshtokenDto) {
+    const tokenOld = this.tokenService.verifyTokenCatch<TokenDto>(
       token,
       configApp().secret_jwt_refresh,
     );
 
-    if (!tokenOld) throw new UnauthorizedException('Token invalido');
+    if (!tokenOld)
+      throw new UnauthorizedException(AuthMessagesError.TOKEN_INVALID);
+
+    const user = await this.userRepository.findOneUserById(tokenOld.id);
+    if (!user || !user.active) {
+      throw new UnauthorizedException(AuthMessagesError.TOKEN_INVALID);
+    }
+    if (tokenOld.tokenVersion !== user.tokenVersion) {
+      throw new UnauthorizedException(AuthMessagesError.SESSION_REVOKED);
+    }
 
     const payload: PayloadDto = {
       email: tokenOld.email,
       id: tokenOld.id,
+      tokenVersion: user.tokenVersion,
+      rememberMe: tokenOld.rememberMe,
     };
 
-    const newToken = this.tokenService.refreshJWTToken(payload);
+    const refreshExpiresIn = tokenOld.rememberMe ? '30d' : '1h';
+    const newToken = this.tokenService.refreshJWTToken(
+      payload,
+      refreshExpiresIn,
+    );
 
     return newToken;
   }
 
-  generateJWTTokenAuth(user: UserDocument) {
-    const payload: TokenDto = {
-      email: user.email,
-      id: user._id.toString(),
-    };
-
+  generateJWTTokenAuth(user: UserDocument, rememberMe: boolean) {
     if (!user.active) {
       throw new BadRequestException(AuthMessagesError.USER_IS_NOT_ACTIVE);
     }
+    const payload: TokenDto = {
+      email: user.email,
+      id: user._id.toString(),
+      tokenVersion: user.tokenVersion,
+      rememberMe,
+    };
 
-    const token = this.tokenService.generateJWTToken(payload, user);
-
-    return token;
+    const refreshExpiresIn = rememberMe ? '30d' : '1h';
+    return this.tokenService.generateJWTToken(payload, refreshExpiresIn, user);
   }
 
   async saveUser(id: string, active: boolean) {
@@ -134,5 +149,9 @@ export class AuthService {
     };
 
     return await this.userRepository.updateUser(id, partialUpdate as User);
+  }
+
+  async invalidateTokens(userId: string) {
+    await this.userRepository.incrementTokenVersion(userId);
   }
 }

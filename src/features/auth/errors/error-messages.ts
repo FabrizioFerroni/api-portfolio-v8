@@ -5,4 +5,7 @@ export enum AuthMessagesError {
   PASSWORD_OR_EMAIL_INVALID = 'Invalid email or password. Please try again',
   USER_BLOCKED = 'User blocked. You have exceeded the maximum number of failed attempts. Please contact the application administrator',
   USER_EMAIL_VALID = 'You must enter a valid email format',
+  TOKEN_EXPIRED = 'El token ha expirado.',
+  TOKEN_INVALID = 'Token inválido.',
+  SESSION_REVOKED = 'La sesión fue cerrada. Volvé a iniciar sesión.',
 }

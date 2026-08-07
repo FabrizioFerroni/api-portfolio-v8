@@ -21,6 +21,9 @@ export class User {
   })
   avatar: string;
 
+  @Prop({ default: 0 })
+  tokenVersion: number;
+
   @Prop({ required: false, trim: true })
   imageUrl: string;
 

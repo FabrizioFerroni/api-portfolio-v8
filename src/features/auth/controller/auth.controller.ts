@@ -7,6 +7,8 @@ import {
   HttpStatus,
   Post,
   Req,
+  Res,
+  UnauthorizedException,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -26,8 +28,13 @@ import { UserDocument } from '@/features/api/user/schema/user.schema';
 import { Authorize } from '../decorators/authorized.decorators';
 import { User } from '../decorators/user.decorator';
 import { UserService } from '@/features/api/user/service/user.service';
-import { RefreshtokenDto } from '../dtos/refresh-token.dto';
 import { Public } from '../decorators/public.decorator';
+import { Response } from 'express';
+import { Cookies } from '@/shared/decorators/cookies.decorator';
+import { TokenDto } from '../dtos/token.dto';
+import { configApp } from '@/config/app/config.app';
+import { TokenService } from '@/shared/services/token.service';
+import { AuthMessagesError } from '../errors/error-messages';
 
 @Controller('auth')
 @ApiTags('Autenticacion de usuario')
@@ -36,6 +43,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
+    private readonly tokenService: TokenService,
   ) {}
 
   @ApiResponse({
@@ -70,9 +78,30 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalGuard)
-  login(@Req() req: Request) {
-    const user = req['user'] as UserDocument;
-    return this.authService.generateJWTTokenAuth(user);
+  async login(
+    @Req() req: Request,
+    @Body('rememberMe') rememberMe: boolean,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const userReq = req['user'] as UserDocument;
+    const result = await this.authService.generateJWTTokenAuth(
+      userReq,
+      rememberMe,
+    );
+    const { refresh_token, ...body } = result;
+
+    this.setCookie(res, rememberMe, refresh_token);
+
+    return {
+      user: {
+        id: body.user._id.toString(),
+        name: body.user.name,
+        lastname: body.user.lastname,
+        email: body.user.email,
+        avatar: body.user.avatar,
+      },
+      access_token: body.access_token,
+    };
   }
 
   @Post('refresh')
@@ -106,8 +135,25 @@ export class AuthController {
   })
   @HttpCode(HttpStatus.OK)
   @Public()
-  refreshToken(@Body() dto: RefreshtokenDto) {
-    return this.authService.refresh(dto);
+  async refreshToken(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Cookies('refresh_token') refreshToken: string,
+  ) {
+    if (!refreshToken)
+      throw new UnauthorizedException(AuthMessagesError.TOKEN_INVALID);
+
+    const result = await this.authService.refresh({ token: refreshToken });
+    const { refresh_token, ...body } = result;
+
+    const decoded = this.tokenService.verifyJWTToken<TokenDto>(
+      refresh_token,
+      configApp().secret_jwt_refresh,
+    );
+
+    this.setCookie(res, decoded.rememberMe, refresh_token);
+
+    return body;
   }
 
   @Get('profile')
@@ -151,5 +197,30 @@ export class AuthController {
    */
   obtainUser(@User() { id }: UserDocument) {
     return this.userService.findOne(id);
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Authorize()
+  @ApiBearerAuth()
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const userId = (req['user'] as { id: string }).id;
+    await this.authService.invalidateTokens(userId);
+    res.clearCookie('refresh_token', { path: '/auth/refresh' });
+    return;
+  }
+
+  private setCookie(
+    res: Response,
+    rememberMe: boolean,
+    refreshToken: string,
+  ): void {
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/auth/refresh',
+      maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 60 * 60 * 1000,
+    });
   }
 }

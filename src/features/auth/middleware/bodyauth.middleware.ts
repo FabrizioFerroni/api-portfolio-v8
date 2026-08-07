@@ -1,6 +1,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { DecryptCredentialsService } from '../services/decryptcredentials.service';
+import { LoginDto } from '../dtos/login.dto';
 
 @Injectable()
 export class BodyAuthMiddleware implements NestMiddleware {
@@ -17,11 +18,11 @@ export class BodyAuthMiddleware implements NestMiddleware {
       });
     }
 
-    const credentialsClean = this.decryptCredentialService.main(
+    const credentialsClean = this.decryptCredentialService.main<LoginDto>(
       headersBasic as string,
     );
 
-    req.body = credentialsClean;
+    req.body = { ...req.body, ...credentialsClean };
 
     next();
   }
