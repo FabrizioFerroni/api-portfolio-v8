@@ -66,6 +66,8 @@ async function bootstrap() {
 
   setupSwagger(app, entorno);
 
+  app.enableShutdownHooks();
+
   await app.listen(apiPort, () => {
     if (entorno === 'development') {
       console.log(

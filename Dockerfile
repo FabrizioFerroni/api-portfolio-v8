@@ -1,5 +1,4 @@
-# ---- Build stage ----
-FROM node:22-alpine AS builder
+FROM node:22.23-alpine AS builder
 
 WORKDIR /usr/src/app
 
@@ -9,8 +8,7 @@ RUN npm clean-install
 COPY . .
 RUN npm run build
 
-# ---- Runtime stage ----
-FROM node:22-alpine AS runtime
+FROM node:22.23-alpine AS runtime
 
 ENV NODE_ENV=production
 WORKDIR /usr/src/app
@@ -20,8 +18,6 @@ RUN npm clean-install --omit=dev && npm cache clean --force
 
 COPY --from=builder /usr/src/app/dist ./dist
 
-RUN mkdir -p /uploads/temp && chown -R node:node /uploads
-RUN mkdir -p /logs && chown -R node:node /logs
 RUN mkdir -p /usr/src/app/logs && chown -R node:node /usr/src/app/logs
 RUN mkdir -p /usr/src/app/uploads && chown -R node:node /usr/src/app/uploads
 RUN mkdir -p /usr/src/app/uploads/temp && chown -R node:node /usr/src/app/uploads/temp
