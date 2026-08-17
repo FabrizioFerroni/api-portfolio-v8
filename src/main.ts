@@ -27,7 +27,13 @@ async function bootstrap() {
     allowedHeaders: hostallowedHeaders,
   });
 
-  app.set('trust proxy', true);
+  const trustProxyByEnv: Record<string, number | boolean> = {
+    development: false, // sin proxy: usar la conexión directa tal cual
+    staging: 4, // cloudflared -> caddy -> traefik -> nginx -> backend
+    production: 3, // cloudflared -> traefik -> nginx -> backend
+  };
+
+  app.set('trust proxy', trustProxyByEnv[process.env.NODE_ENV] ?? false);
 
   app.use((req, res, next) => {
     req.timezone = tz;
@@ -69,7 +75,7 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   await app.listen(apiPort, () => {
-    if (entorno === 'development') {
+    if (entorno === 'development' || entorno === 'staging') {
       console.log(
         `🚀 Application is running in ${entorno} environment on: ${apiHost}:${apiPort}`,
       );

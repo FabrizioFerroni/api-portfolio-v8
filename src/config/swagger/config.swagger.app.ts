@@ -32,9 +32,9 @@ export const setupSwagger = (app: INestApplication, entorno: string) => {
       {
         type: 'apiKey',
         in: 'header',
-        name: 'x-api-key', // el nombre real del header
+        name: 'x-api-key',
       },
-      'api-key', // nombre del esquema (referencia interna)
+      'api-key',
     )
     .build();
 

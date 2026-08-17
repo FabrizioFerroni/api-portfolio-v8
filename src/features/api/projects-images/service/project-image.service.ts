@@ -82,20 +82,22 @@ export class ProjectImageService {
     dto: UploadImagesProjectsDto,
     file: Express.Multer.File,
   ): Promise<boolean> {
-    const folder = join(process.cwd(), 'uploads', 'projects', dto.projectId);
+    const slug = generateSlug(dto.projectName);
+    const slugAltText = generateSlug(dto.altText);
+    const folder = join(process.cwd(), 'uploads', 'projects', slug, 'gallery');
     mkdirSync(folder, { recursive: true });
 
     const ext = extname(file.originalname);
     const uid =
       Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    const filename = `${generateSlug(dto.projectName)}-${uid}${ext}`;
+    const filename = `${slug}-${slugAltText}-${uid}${ext}`;
     const filePath = join(folder, filename);
 
     writeFileSync(filePath, file.buffer);
 
     const record: ProjectImage = {
-      imageUrl: `/file/projects/${dto.projectId}/${filename}`,
-      imageFullUrl: `${configApp().frontHost}/file/projects/${dto.projectId}/${filename}`, //TODO: fronthost debiera ser el host del frontedn del portfolio...
+      imageUrl: `/file/projects/${slug}/gallery/${filename}`,
+      imageFullUrl: `${configApp().frontHostPortfolio}/file/projects/${slug}/gallery/${filename}`,
       imagePath: filePath,
       displayOrder: dto.displayOrder ?? 0,
       altText: dto.altText ?? `Imagen proyecto ${dto.projectName}`,

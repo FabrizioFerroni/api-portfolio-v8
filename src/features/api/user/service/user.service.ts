@@ -237,20 +237,21 @@ export class UserService {
 
   private async uploadFile(data: UserDocument, file: Express.Multer.File) {
     const id = data._id;
-    const folder = join(process.cwd(), 'uploads', 'users', id.toString());
+    const slug = generateSlug(`${data.name} ${data.lastname}`);
+    const folder = join(process.cwd(), 'uploads', 'users', slug);
     mkdirSync(folder, { recursive: true });
 
     const ext = extname(file.originalname);
     const uid =
       Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    const fullName = `${data.name} ${data.name}`;
+    const fullName = `${data.name} ${data.lastname}`;
     const filename = `${generateSlug(fullName)}-${uid}${ext}`;
     const filePath = join(folder, filename);
 
     writeFileSync(filePath, file.buffer);
 
-    data.imageUrl = `/file/users/${id.toString()}/${filename}`;
-    data.avatar = `${configApp().frontHost}/file/users/${id.toString()}/${filename}`;
+    data.imageUrl = `/file/users/${slug}/${filename}`;
+    data.avatar = `${configApp().frontHost}/file/users/${slug}/${filename}`;
     data.imagePath = filePath;
     data.updatedAt = new Date();
 
