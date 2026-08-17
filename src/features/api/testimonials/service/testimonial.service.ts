@@ -307,12 +307,8 @@ export class TestimonialService {
     file: Express.Multer.File,
   ) {
     const id = data._id;
-    const folder = join(
-      process.cwd(),
-      'uploads',
-      'testimonials',
-      id.toString(),
-    );
+    const slug = generateSlug(data.fullname);
+    const folder = join(process.cwd(), 'uploads', 'testimonials', slug);
     mkdirSync(folder, { recursive: true });
 
     const ext = extname(file.originalname);
@@ -323,8 +319,8 @@ export class TestimonialService {
 
     writeFileSync(filePath, file.buffer);
 
-    data.imageUrl = `/file/testimonials/${id.toString()}/${filename}`;
-    data.imageFullUrl = `${configApp().frontHost}/file/testimonials/${id.toString()}/${filename}`;
+    data.imageUrl = `/file/testimonials/${slug}/${filename}`;
+    data.imageFullUrl = `${configApp().frontHostPortfolio}/file/testimonials/${slug}/${filename}`;
     data.imagePath = filePath;
     data.updatedAt = new Date();
 

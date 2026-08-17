@@ -420,7 +420,8 @@ export class ProjectService {
 
   private async uploadFile(data: ProjectDocument, file: Express.Multer.File) {
     const id = data._id;
-    const folder = join(process.cwd(), 'uploads', 'projects', id.toString());
+    const slug = data.slug;
+    const folder = join(process.cwd(), 'uploads', 'projects', slug);
     mkdirSync(folder, { recursive: true });
 
     const ext = extname(file.originalname);
@@ -431,8 +432,8 @@ export class ProjectService {
 
     writeFileSync(filePath, file.buffer);
 
-    data.imageUrl = `/file/projects/${id.toString()}/${filename}`;
-    data.imageFullUrl = `${configApp().frontHost}/file/projects/${id.toString()}/${filename}`;
+    data.imageUrl = `/file/projects/${slug}/${filename}`;
+    data.imageFullUrl = `${configApp().frontHostPortfolio}/file/projects/${slug}/${filename}`;
     data.imagePath = filePath;
     data.updatedAt = new Date();
 
