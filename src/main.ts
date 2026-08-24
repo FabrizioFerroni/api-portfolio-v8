@@ -28,9 +28,9 @@ async function bootstrap() {
   });
 
   const trustProxyByEnv: Record<string, number | boolean> = {
-    development: false, // sin proxy: usar la conexión directa tal cual
-    staging: 4, // cloudflared -> caddy -> traefik -> nginx -> backend
-    production: 3, // cloudflared -> traefik -> nginx -> backend
+    development: 1,
+    staging: 4,
+    production: 3,
   };
 
   app.set('trust proxy', trustProxyByEnv[process.env.NODE_ENV] ?? false);

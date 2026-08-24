@@ -9,6 +9,7 @@ import { SettingsModule } from './settings/settings.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { PortfolioViewModule } from './portfolioviews/portfolioviews.module';
 import { TestimonialModule } from './testimonials/testimonials.module';
+import { SessionModule } from './sessions/sessions.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { TestimonialModule } from './testimonials/testimonials.module';
     ExperienceModule,
     UserModule,
     ProjectModule,
+    SessionModule,
     SettingsModule,
     TestimonialModule,
   ],
@@ -32,6 +34,7 @@ import { TestimonialModule } from './testimonials/testimonials.module';
     ExperienceModule,
     UserModule,
     ProjectModule,
+    SessionModule,
     SettingsModule,
     TestimonialModule,
   ],

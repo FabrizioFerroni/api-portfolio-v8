@@ -8,4 +8,5 @@ export enum AuthMessagesError {
   TOKEN_EXPIRED = 'El token ha expirado.',
   TOKEN_INVALID = 'Token inválido.',
   SESSION_REVOKED = 'La sesión fue cerrada. Volvé a iniciar sesión.',
+  TOKEN_REUSED = 'La sesión fue cerrada por motivos de seguridad, inicia sesión nuevamente',
 }

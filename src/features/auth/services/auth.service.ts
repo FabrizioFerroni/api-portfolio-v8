@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -20,9 +21,13 @@ import { validatePassword } from '@/shared/utils/functions/validate-passwords';
 import { RefreshtokenDto } from '../dtos/refresh-token.dto';
 import { TokenService } from '@/shared/services/token.service';
 import { PayloadDto } from '../dtos/payload.dto';
+import { SessionService } from '@/features/api/sessions/service/session.service';
+import { Request } from 'express';
+import { SessionDocument } from '@/features/api/sessions/schema/session.schema';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   private failedLoginAttempts = new Map<string, number>();
   private password_failures: number = configApp().max_pass_failures;
 
@@ -31,6 +36,7 @@ export class AuthService {
     @Inject(TransformDto)
     private readonly transform: TransformDto<UserDocument, AuthResponseDto>,
     private readonly tokenService: TokenService,
+    private readonly sessionService: SessionService,
   ) {}
 
   transformArray(data: UserDocument[]): AuthResponseDto[] {
@@ -108,14 +114,33 @@ export class AuthService {
     if (!user || !user.active) {
       throw new UnauthorizedException(AuthMessagesError.TOKEN_INVALID);
     }
-    if (tokenOld.tokenVersion !== user.tokenVersion) {
+
+    const session = await this.sessionService.findActiveById(
+      tokenOld.sessionId,
+    );
+
+    if (!session) {
       throw new UnauthorizedException(AuthMessagesError.SESSION_REVOKED);
+    }
+
+    const isValidRefreshToken =
+      await this.sessionService.validateRefreshTokenHash(
+        session.id.toString(),
+        token,
+      );
+
+    if (!isValidRefreshToken) {
+      await this.sessionService.revoke(session.id.toString());
+      this.logger.warn(
+        `Refresh token reuse detected for session ${session.id}`,
+      );
+      throw new UnauthorizedException(AuthMessagesError.TOKEN_REUSED);
     }
 
     const payload: PayloadDto = {
       email: tokenOld.email,
       id: tokenOld.id,
-      tokenVersion: user.tokenVersion,
+      sessionId: session.id,
       rememberMe: tokenOld.rememberMe,
     };
 
@@ -125,22 +150,52 @@ export class AuthService {
       refreshExpiresIn,
     );
 
+    await this.sessionService.rotate(
+      session.id.toString(),
+      newToken.refresh_token,
+      tokenOld.rememberMe,
+    );
+
     return newToken;
   }
 
-  generateJWTTokenAuth(user: UserDocument, rememberMe: boolean) {
+  async generateJWTTokenAuth(
+    user: UserDocument,
+    rememberMe: boolean,
+    req: Request,
+  ) {
     if (!user.active) {
       throw new BadRequestException(AuthMessagesError.USER_IS_NOT_ACTIVE);
     }
+
+    const session: SessionDocument = await this.sessionService.create(
+      {
+        userId: user._id.toString(),
+        remembered: rememberMe ? 'true' : 'false',
+      },
+      req,
+    );
+
     const payload: TokenDto = {
       email: user.email,
       id: user._id.toString(),
-      tokenVersion: user.tokenVersion,
+      sessionId: session._id.toString(),
       rememberMe,
     };
 
     const refreshExpiresIn = rememberMe ? '30d' : '1h';
-    return this.tokenService.generateJWTToken(payload, refreshExpiresIn, user);
+    const tokenRsp = this.tokenService.generateJWTToken(
+      payload,
+      refreshExpiresIn,
+      user,
+    );
+
+    await this.sessionService.storeRefreshTokenHash(
+      session._id.toString(),
+      tokenRsp.refresh_token,
+    );
+
+    return tokenRsp;
   }
 
   async saveUser(id: string, active: boolean) {
