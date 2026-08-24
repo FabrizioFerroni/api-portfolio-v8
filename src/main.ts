@@ -27,18 +27,25 @@ async function bootstrap() {
     allowedHeaders: hostallowedHeaders,
   });
 
-  const trustProxyByEnv: Record<string, number | boolean> = {
+  /* const trustProxyByEnv: Record<string, number | boolean> = {
     development: 1,
     staging: 4,
     production: 3,
-  };
+  }; */
 
   app.use((req, res, next) => {
     console.log('XFF:', req.headers['x-forwarded-for']);
     next();
   });
 
+  const trustProxyByEnv: Record<string, string[] | boolean> = {
+    development: false,
+    staging: ['192.168.0.26', '10.0.1.0/24', 'loopback'],
+    production: ['192.168.0.26', '10.0.1.0/24', 'loopback'],
+  };
   app.set('trust proxy', trustProxyByEnv[process.env.NODE_ENV] ?? false);
+
+  // app.set('trust proxy', trustProxyByEnv[process.env.NODE_ENV] ?? false);
 
   app.use((req, res, next) => {
     req.timezone = tz;
