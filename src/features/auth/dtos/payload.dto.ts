@@ -17,9 +17,9 @@ export class PayloadDto {
   @IsOptional()
   id?: string;
 
-  @IsNumber()
+  @IsString()
   @IsOptional()
-  tokenVersion?: number;
+  sessionId?: string;
 
   @IsOptional()
   @IsIn(['true', 'false'])

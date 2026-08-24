@@ -5,10 +5,14 @@ import { TokenDto } from '../dtos/token.dto';
 import { configApp } from '@/config/app/config.app';
 import { UserRepository } from '@/features/api/user/repository/user.repository';
 import { AuthMessagesError } from '../errors/error-messages';
+import { SessionService } from '@/features/api/sessions/service/session.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor(private readonly userRepository: UserRepository) {
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly sessionService: SessionService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: configApp().secret_jwt,
@@ -18,13 +22,17 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
   async validate(payload: TokenDto) {
     const user = await this.userRepository.findOneUserById(payload.id);
+
     if (!user || !user.active) {
       throw new UnauthorizedException(AuthMessagesError.TOKEN_INVALID);
     }
 
-    if (payload.tokenVersion !== user.tokenVersion) {
+    const session = await this.sessionService.findActiveById(payload.sessionId);
+
+    if (!session) {
       throw new UnauthorizedException(AuthMessagesError.SESSION_REVOKED);
     }
+
     return payload;
   }
 }

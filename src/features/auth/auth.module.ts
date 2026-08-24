@@ -19,11 +19,13 @@ import { AuthController } from './controller/auth.controller';
 import { BodyAuthMiddleware } from './middleware/bodyauth.middleware';
 import { DecryptCredentialsService } from './services/decryptcredentials.service';
 import { SharedModule } from '@/shared/shared.module';
+import { SessionModule } from '../api/sessions/sessions.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     UserModule,
+    SessionModule,
     PassportModule,
     SharedModule,
   ],

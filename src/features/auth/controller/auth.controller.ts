@@ -35,6 +35,7 @@ import { TokenDto } from '../dtos/token.dto';
 import { configApp } from '@/config/app/config.app';
 import { TokenService } from '@/shared/services/token.service';
 import { AuthMessagesError } from '../errors/error-messages';
+import { SessionService } from '@/features/api/sessions/service/session.service';
 
 @Controller('auth')
 @ApiTags('Autenticacion de usuario')
@@ -44,6 +45,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
+    private readonly sessionService: SessionService,
   ) {}
 
   @ApiResponse({
@@ -84,9 +86,11 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const userReq = req['user'] as UserDocument;
+
     const result = await this.authService.generateJWTTokenAuth(
       userReq,
       rememberMe,
+      req,
     );
     const { refresh_token, ...body } = result;
 
@@ -204,8 +208,8 @@ export class AuthController {
   @Authorize()
   @ApiBearerAuth()
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const userId = (req['user'] as { id: string }).id;
-    await this.authService.invalidateTokens(userId);
+    const { sessionId } = req['user'] as TokenDto;
+    await this.sessionService.revoke(sessionId);
     res.clearCookie('refresh_token', { path: '/auth/refresh' });
     return;
   }
