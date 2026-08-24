@@ -33,6 +33,11 @@ async function bootstrap() {
     production: 3,
   };
 
+  app.use((req, res, next) => {
+    console.log('XFF:', req.headers['x-forwarded-for']);
+    next();
+  });
+
   app.set('trust proxy', trustProxyByEnv[process.env.NODE_ENV] ?? false);
 
   app.use((req, res, next) => {
