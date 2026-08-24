@@ -13,8 +13,10 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseInterceptor } from './config/interceptors/response.interceptor';
 import { CustomExceptionFilter } from './core/filters/exceptions.filter';
+import { DebugIpController } from './debug.controller';
 
 @Module({
+  controllers: [DebugIpController],
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
@@ -55,7 +57,6 @@ import { CustomExceptionFilter } from './core/filters/exceptions.filter';
     AuthModule,
     ApiModule,
   ],
-  controllers: [],
   providers: [
     {
       provide: APP_GUARD,
