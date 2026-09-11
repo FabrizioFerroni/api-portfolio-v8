@@ -242,7 +242,7 @@ export class ProjectRepository
     limit: number = 3,
   ): Promise<ProjectWithRelations[]> {
     const sameCategory = await this.projectModel
-      .find({ _id: { $ne: projectId }, category })
+      .find({ _id: { $ne: projectId }, category, isPublished: true })
       .limit(limit)
       .exec();
 
@@ -253,7 +253,7 @@ export class ProjectRepository
       const excludeIds = [projectId, ...projects.map((p) => p._id.toString())];
 
       const differentCategory = await this.projectModel
-        .find({ _id: { $nin: excludeIds } })
+        .find({ _id: { $nin: excludeIds }, isPublished: true })
         .limit(remaining)
         .exec();
 
@@ -290,8 +290,11 @@ export class ProjectRepository
     return this.populateProject(project);
   }
 
-  async getProjectBySlug(slug: any): Promise<ProjectWithRelations | null> {
-    const project = await this.projectModel.findOne({ slug });
+  async getProjectBySlug(
+    slug: string,
+    isPublished: boolean,
+  ): Promise<ProjectWithRelations | null> {
+    const project = await this.projectModel.findOne({ slug, isPublished });
     return this.populateProject(project);
   }
 

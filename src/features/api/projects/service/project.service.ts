@@ -48,6 +48,7 @@ import { PaginationMeta } from '@/core/interfaces/pagination-meta.interface';
 import { ProjectImageService } from '../../projects-images/service/project-image.service';
 import { ProjectStatsResponseDto } from '../dto/response/project-stats.response.dto';
 import { response } from 'express';
+import { InvalidObjectIdException } from '@/shared/exceptions/invalid-object-id.exception';
 
 @Injectable()
 export class ProjectService {
@@ -129,6 +130,12 @@ export class ProjectService {
   }
 
   async getRelatedProjects(id: string): Promise<ProjectResponseRelatedDto[]> {
+    const isValidId = Types.ObjectId.isValid(id);
+
+    if (!isValidId) {
+      throw new InvalidObjectIdException(id, 'getRelatedProjectsService');
+    }
+
     const project = await this.projectRepository.getProjectById(id);
 
     if (!project) {
@@ -136,7 +143,7 @@ export class ProjectService {
     }
 
     const relatedProject = await this.projectRepository.findRelated(
-      project.id,
+      id,
       project.category,
     );
 
@@ -233,7 +240,7 @@ export class ProjectService {
   }
 
   async getProjectBySlug(slug: string): Promise<ProjectResponseDto> {
-    const project = await this.projectRepository.getProjectBySlug(slug);
+    const project = await this.projectRepository.getProjectBySlug(slug, true);
 
     if (!project) {
       throw new NotFoundException(ProjectError.PROJECT_NOT_FOUND);
