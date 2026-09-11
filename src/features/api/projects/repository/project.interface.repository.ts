@@ -28,7 +28,10 @@ export abstract class IProjectRepository extends MongoDBRepository<ProjectDocume
   abstract count(): Promise<number>;
   abstract getProjectById(id: string): Promise<ProjectWithRelations | null>;
   abstract getProjectsByIds(ids: string[]): Promise<ProjectWithRelations[]>;
-  abstract getProjectBySlug(slug): Promise<ProjectWithRelations | null>;
+  abstract getProjectBySlug(
+    slug: string,
+    isPublished: boolean,
+  ): Promise<ProjectWithRelations | null>;
   abstract projectAlredyExist(title: string, id?: string): Promise<boolean>;
   abstract projectAlredyExistSlug(slug: string, id?: string): Promise<boolean>;
   abstract createProyect(data: Project): Promise<ProjectDocument>;
