@@ -47,8 +47,8 @@ import { PaginationService } from '@/core/services/pagination.service';
 import { PaginationMeta } from '@/core/interfaces/pagination-meta.interface';
 import { ProjectImageService } from '../../projects-images/service/project-image.service';
 import { ProjectStatsResponseDto } from '../dto/response/project-stats.response.dto';
-import { response } from 'express';
 import { InvalidObjectIdException } from '@/shared/exceptions/invalid-object-id.exception';
+import { ImageProcessingService } from '@/shared/services/image-processing.service';
 
 @Injectable()
 export class ProjectService {
@@ -71,6 +71,7 @@ export class ProjectService {
       ProjectResponseSelectDto
     >,
     private readonly paginationService: PaginationService,
+    private readonly imageProcessingService: ImageProcessingService,
   ) {}
 
   transformArray(data: ProjectWithRelations[]): ProjectResponseDto[] {
@@ -339,12 +340,7 @@ export class ProjectService {
     }
 
     if (file) {
-      if (existsSync(project.imagePath)) {
-        unlinkSync(project.imagePath);
-        this.removeDirectoryIfEmpty(project.imagePath);
-      }
-
-      await this.uploadFile(project as unknown as ProjectDocument, file);
+      await this.replaceImage(project as unknown as ProjectDocument, file);
     }
 
     const projToEdit: Partial<Project> = {};
@@ -400,10 +396,7 @@ export class ProjectService {
       throw new NotFoundException(ProjectError.PROJECT_NOT_FOUND);
     }
 
-    if (existsSync(project.imagePath)) {
-      unlinkSync(project.imagePath);
-      this.removeDirectoryIfEmpty(project.imagePath);
-    }
+    this.deleteProjectImages(project as unknown as ProjectDocument);
 
     const result: boolean = await this.projectRepository.deleteProject(id);
 
@@ -434,14 +427,35 @@ export class ProjectService {
     const ext = extname(file.originalname);
     const uid =
       Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    const filename = `${generateSlug(data.title)}-${uid}${ext}`;
+    const baseFilename = `${generateSlug(data.title)}-${uid}`;
+    const filename = `${baseFilename}${ext}`;
     const filePath = join(folder, filename);
 
     writeFileSync(filePath, file.buffer);
 
+    const variants: Record<string, { path: string; filename: string }> =
+      await this.imageProcessingService.generateAndSaveVariants(
+        file.buffer,
+        folder,
+        baseFilename,
+      );
+
     data.imageUrl = `/file/projects/${slug}/${filename}`;
     data.imageFullUrl = `${configApp().frontHostPortfolio}/file/projects/${slug}/${filename}`;
     data.imagePath = filePath;
+
+    data.imageVariants = Object.fromEntries(
+      Object.entries(variants).map(
+        ([name, { filename: vFilename, path: vPath }]) => [
+          name,
+          {
+            url: `${configApp().frontHostPortfolio}/file/projects/${slug}/${vFilename}`,
+            path: vPath,
+          },
+        ],
+      ),
+    );
+
     data.updatedAt = new Date();
 
     const update = await this.projectRepository.updateProyect(
@@ -477,6 +491,45 @@ export class ProjectService {
     const failed = results.filter((r) => r.status === 'rejected');
     if (failed.length > 0) {
       this.logger.warn(`${failed.length} features fallaron al crear`);
+    }
+  }
+
+  private async replaceImage(
+    project: ProjectDocument,
+    file: Express.Multer.File,
+  ) {
+    if (project.imagePath && existsSync(project.imagePath)) {
+      unlinkSync(project.imagePath);
+    }
+
+    if (project.imageVariants) {
+      for (const variant of Object.values(project.imageVariants)) {
+        if (variant.path && existsSync(variant.path)) {
+          unlinkSync(variant.path);
+        }
+      }
+    }
+
+    this.removeDirectoryIfEmpty(project.imagePath);
+
+    await this.uploadFile(project as unknown as ProjectDocument, file);
+  }
+
+  private deleteProjectImages(project: ProjectDocument) {
+    if (project.imagePath && existsSync(project.imagePath)) {
+      unlinkSync(project.imagePath);
+    }
+
+    if (project.imageVariants) {
+      for (const variant of Object.values(project.imageVariants)) {
+        if (variant.path && existsSync(variant.path)) {
+          unlinkSync(variant.path);
+        }
+      }
+    }
+
+    if (project.imagePath) {
+      this.removeDirectoryIfEmpty(project.imagePath);
     }
   }
 

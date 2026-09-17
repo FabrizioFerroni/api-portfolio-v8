@@ -36,10 +36,13 @@ export class ProjectResponseDto {
   type: string;
 
   @Expose()
-  imageUrl: string;
+  imageVariants?: Record<string, { url: string; path: string }>;
 
   @Expose()
-  imageFullUrl: string;
+  imageUrl?: string;
+
+  @Expose()
+  imageFullUrl?: string;
 
   @Expose()
   urlGithub: string;
@@ -102,10 +105,13 @@ export class ProjectResponseHomeDto {
   type: string;
 
   @Expose()
-  imageUrl: string;
+  imageVariants?: Record<string, { url: string; path: string }>;
 
   @Expose()
-  imageFullUrl: string;
+  imageUrl?: string;
+
+  @Expose()
+  imageFullUrl?: string;
 
   @Expose()
   urlGithub: string;
@@ -168,10 +174,13 @@ export class ProjectResponseRelatedDto {
   type: string;
 
   @Expose()
-  imageUrl: string;
+  imageVariants?: Record<string, { url: string; path: string }>;
 
   @Expose()
-  imageFullUrl: string;
+  imageUrl?: string;
+
+  @Expose()
+  imageFullUrl?: string;
 
   @Exclude()
   urlGithub: string;
