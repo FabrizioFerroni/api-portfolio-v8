@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import sharp = require('sharp');
-import { writeFileSync } from 'fs';
-import { join } from 'path';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { VariantConfig } from '../interfaces/variant.interface';
 
 @Injectable()
 export class ImageProcessingService {
   private readonly variants: VariantConfig[] = [
-    { name: 'thumbnail', width: 200, height: 200, fit: 'cover' },
-    { name: 'medium', width: 800, height: 600, fit: 'inside' },
+    { name: 'thumbnail', width: 800, height: 450 },
+    { name: 'medium', width: 1600, height: 900 },
   ];
 
   async generateAndSaveVariants(
@@ -21,16 +21,21 @@ export class ImageProcessingService {
     await Promise.all(
       this.variants.map(async (variant) => {
         const buffer = await sharp(inputBuffer)
+          .rotate()
           .resize(variant.width, variant.height, {
-            fit: variant.fit,
-            withoutEnlargement: true,
+            fit: 'cover',
+            position: sharp.strategy.attention,
           })
           .toFormat('webp', { quality: 80 })
           .toBuffer();
 
-        const filename = `${baseFilename}-${variant.name}.webp`;
-        const filePath = join(folder, filename);
-        writeFileSync(filePath, buffer);
+        const variantFolder = join(folder, variant.name);
+
+        await mkdir(variantFolder, { recursive: true });
+
+        const filename = `${baseFilename}.webp`;
+        const filePath = join(variantFolder, filename);
+        await writeFile(filePath, buffer);
 
         results[variant.name] = { path: filePath, filename };
       }),

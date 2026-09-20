@@ -36,13 +36,16 @@ export class ProjectResponseDto {
   type: string;
 
   @Expose()
-  imageVariants?: Record<string, { url: string; path: string }>;
-
-  @Expose()
-  imageUrl?: string;
-
-  @Expose()
-  imageFullUrl?: string;
+  @Transform(({ value }) =>
+    value
+      ? Object.fromEntries(
+          Object.entries(value as Record<string, { url: string }>).map(
+            ([variant, { url }]) => [variant, { url }],
+          ),
+        )
+      : value,
+  )
+  imageVariants: Record<string, { url: string; path: string }>;
 
   @Expose()
   urlGithub: string;
@@ -105,13 +108,16 @@ export class ProjectResponseHomeDto {
   type: string;
 
   @Expose()
-  imageVariants?: Record<string, { url: string; path: string }>;
-
-  @Expose()
-  imageUrl?: string;
-
-  @Expose()
-  imageFullUrl?: string;
+  @Transform(({ value }) =>
+    value
+      ? Object.fromEntries(
+          Object.entries(value as Record<string, { url: string }>).map(
+            ([variant, { url }]) => [variant, { url }],
+          ),
+        )
+      : value,
+  )
+  imageVariants: Record<string, { url: string; path: string }>;
 
   @Expose()
   urlGithub: string;
@@ -174,13 +180,16 @@ export class ProjectResponseRelatedDto {
   type: string;
 
   @Expose()
-  imageVariants?: Record<string, { url: string; path: string }>;
-
-  @Expose()
-  imageUrl?: string;
-
-  @Expose()
-  imageFullUrl?: string;
+  @Transform(({ value }) =>
+    value
+      ? Object.fromEntries(
+          Object.entries(value as Record<string, { url: string }>).map(
+            ([variant, { url }]) => [variant, { url }],
+          ),
+        )
+      : value,
+  )
+  imageVariants: Record<string, { url: string; path: string }>;
 
   @Exclude()
   urlGithub: string;
@@ -243,10 +252,16 @@ export class ProjectResponseSelectDto {
   type: string;
 
   @Exclude()
-  imageUrl: string;
-
-  @Exclude()
-  imageFullUrl: string;
+  @Transform(({ value }) =>
+    value
+      ? Object.fromEntries(
+          Object.entries(value as Record<string, { url: string }>).map(
+            ([variant, { url }]) => [variant, { url }],
+          ),
+        )
+      : value,
+  )
+  imageVariants: Record<string, { url: string; path: string }>;
 
   @Exclude()
   urlGithub: string;

@@ -46,18 +46,7 @@ export class Project {
   urlProyect: string;
 
   @Prop({ type: Object })
-  imageVariants?: Record<string, { url: string; path: string }>;
-
-  /* Borrar despues de cambiar todo el frontend */
-  @Prop({ required: false, trim: true })
-  imageUrl?: string;
-
-  @Prop({ required: false, trim: true })
-  imageFullUrl?: string;
-
-  @Prop({ required: false, trim: true })
-  imagePath?: string;
-  /* Fin borrar */
+  imageVariants: Record<string, { url: string; path: string }>;
 
   @Prop({ type: Date, default: Date.now })
   createdAt: Date;
