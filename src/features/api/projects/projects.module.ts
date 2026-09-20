@@ -13,6 +13,7 @@ import { ProjectService } from './service/project.service';
 import { ProjectController } from './controller/project.controller';
 import { memoryStorage } from 'multer';
 import { CoreModule } from '@/core/core.module';
+import { SharedModule } from '@/shared/shared.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { CoreModule } from '@/core/core.module';
       storage: memoryStorage(),
     }),
     CoreModule,
+    SharedModule,
   ],
   controllers: [ProjectController],
   providers: [

@@ -10,6 +10,7 @@ import { HttpModule } from '@nestjs/axios';
 import { TokenService } from './services/token.service';
 import { TransformDto } from './utils';
 import { JwtModule } from '@nestjs/jwt';
+import { ImageProcessingService } from './services/image-processing.service';
 
 @Module({
   controllers: [StatusController],
@@ -44,8 +45,8 @@ import { JwtModule } from '@nestjs/jwt';
       },
     }),
   ],
-  providers: [TokenService, TransformDto],
-  exports: [MulterModule, TokenService],
+  providers: [TokenService, ImageProcessingService, TransformDto],
+  exports: [MulterModule, TokenService, ImageProcessingService],
 })
 export class SharedModule {
   constructor() {

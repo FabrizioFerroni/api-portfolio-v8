@@ -18,15 +18,8 @@ import {
 import { ProjectWithRelations } from '../interfaces/project-with-relations.interface';
 import { ProjectError, ProjectOk } from '../messages/project.messages';
 import { CreateNewProjectDto } from '../dto/create-project.dto';
-import { dirname, extname, join } from 'path';
-import {
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  rmdirSync,
-  unlinkSync,
-  writeFileSync,
-} from 'fs';
+import { dirname, join } from 'path';
+import { existsSync, mkdirSync, readdirSync, rmdirSync, rmSync } from 'fs';
 import { generateSlug } from '@/shared/utils/functions/generateSlug';
 import { Types } from 'mongoose';
 import { configApp } from '@/config/app/config.app';
@@ -47,8 +40,8 @@ import { PaginationService } from '@/core/services/pagination.service';
 import { PaginationMeta } from '@/core/interfaces/pagination-meta.interface';
 import { ProjectImageService } from '../../projects-images/service/project-image.service';
 import { ProjectStatsResponseDto } from '../dto/response/project-stats.response.dto';
-import { response } from 'express';
 import { InvalidObjectIdException } from '@/shared/exceptions/invalid-object-id.exception';
+import { ImageProcessingService } from '@/shared/services/image-processing.service';
 
 @Injectable()
 export class ProjectService {
@@ -71,6 +64,7 @@ export class ProjectService {
       ProjectResponseSelectDto
     >,
     private readonly paginationService: PaginationService,
+    private readonly imageProcessingService: ImageProcessingService,
   ) {}
 
   transformArray(data: ProjectWithRelations[]): ProjectResponseDto[] {
@@ -339,12 +333,7 @@ export class ProjectService {
     }
 
     if (file) {
-      if (existsSync(project.imagePath)) {
-        unlinkSync(project.imagePath);
-        this.removeDirectoryIfEmpty(project.imagePath);
-      }
-
-      await this.uploadFile(project as unknown as ProjectDocument, file);
+      await this.replaceImage(project as unknown as ProjectDocument, file);
     }
 
     const projToEdit: Partial<Project> = {};
@@ -400,10 +389,7 @@ export class ProjectService {
       throw new NotFoundException(ProjectError.PROJECT_NOT_FOUND);
     }
 
-    if (existsSync(project.imagePath)) {
-      unlinkSync(project.imagePath);
-      this.removeDirectoryIfEmpty(project.imagePath);
-    }
+    this.deleteProjectImages(project as unknown as ProjectDocument);
 
     const result: boolean = await this.projectRepository.deleteProject(id);
 
@@ -414,34 +400,35 @@ export class ProjectService {
     return true;
   }
 
-  private removeDirectoryIfEmpty(filePath: string): void {
-    const dir: string = dirname(filePath);
-
-    if (existsSync(dir)) {
-      const remaining: string[] = readdirSync(dir);
-      if (remaining.length === 0) {
-        rmdirSync(dir);
-      }
-    }
-  }
-
   private async uploadFile(data: ProjectDocument, file: Express.Multer.File) {
     const id = data._id;
     const slug = data.slug;
     const folder = join(process.cwd(), 'uploads', 'projects', slug);
     mkdirSync(folder, { recursive: true });
 
-    const ext = extname(file.originalname);
     const uid =
       Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    const filename = `${generateSlug(data.title)}-${uid}${ext}`;
-    const filePath = join(folder, filename);
+    const baseFilename = `${generateSlug(data.title)}-${uid}`;
 
-    writeFileSync(filePath, file.buffer);
+    const variants: Record<string, { path: string; filename: string }> =
+      await this.imageProcessingService.generateAndSaveVariants(
+        file.buffer,
+        folder,
+        baseFilename,
+      );
 
-    data.imageUrl = `/file/projects/${slug}/${filename}`;
-    data.imageFullUrl = `${configApp().frontHostPortfolio}/file/projects/${slug}/${filename}`;
-    data.imagePath = filePath;
+    data.imageVariants = Object.fromEntries(
+      Object.entries(variants).map(
+        ([name, { filename: vFilename, path: vPath }]) => [
+          name,
+          {
+            url: `${configApp().frontHostPortfolio}/file/projects/${slug}/${name}/${vFilename}`,
+            path: vPath,
+          },
+        ],
+      ),
+    );
+
     data.updatedAt = new Date();
 
     const update = await this.projectRepository.updateProyect(
@@ -478,6 +465,21 @@ export class ProjectService {
     if (failed.length > 0) {
       this.logger.warn(`${failed.length} features fallaron al crear`);
     }
+  }
+
+  private async replaceImage(
+    project: ProjectDocument,
+    file: Express.Multer.File,
+  ): Promise<void> {
+    this.deleteProjectImages(project);
+    await this.uploadFile(project, file);
+  }
+
+  private deleteProjectImages(project: ProjectDocument): void {
+    if (!project.slug) return;
+
+    const projectDir = join(process.cwd(), 'uploads', 'projects', project.slug);
+    rmSync(projectDir, { recursive: true, force: true });
   }
 
   private async createProjectTech(

@@ -1,6 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
+@Schema({ _id: false })
+export class ImageVariant {
+  @Prop({ required: true })
+  url: string;
+
+  @Prop({ required: true })
+  path: string;
+}
+
 @Schema({ versionKey: false })
 export class Project {
   @Prop({ required: true, trim: true })
@@ -36,14 +45,8 @@ export class Project {
   @Prop({ required: false, trim: true, default: '' })
   urlProyect: string;
 
-  @Prop({ required: false, trim: true })
-  imageUrl: string;
-
-  @Prop({ required: false, trim: true })
-  imageFullUrl: string;
-
-  @Prop({ required: false, trim: true })
-  imagePath: string;
+  @Prop({ type: Object })
+  imageVariants: Record<string, { url: string; path: string }>;
 
   @Prop({ type: Date, default: Date.now })
   createdAt: Date;
