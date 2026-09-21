@@ -16,8 +16,6 @@ export const templateToString = function (
       path = process.cwd() + `/src/core/mail/pages/${plantilla}.html`;
     }
 
-    console.log(path);
-
     const html: string = fileToString(path);
 
     const rest_html: string = ejs.render(html, data);
