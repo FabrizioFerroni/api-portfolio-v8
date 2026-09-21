@@ -1,14 +1,20 @@
 import Handlebars from 'handlebars';
 import * as ejs from 'ejs';
 import { fileToString } from '../utils/fileToString';
+import { configApp } from '@/config/app/config.app';
 
 export const templateToString = function (
   plantilla: string = '',
   data: Record<string, unknown> = {},
 ): string {
   try {
-    const path: string =
-      process.cwd() + `/src/core/mail/pages/${plantilla}.html`;
+    let path = '';
+
+    if (configApp().env === 'production' || configApp().env === 'staging') {
+      path = process.cwd() + `/dist/core/mail/pages/${plantilla}.html`;
+    } else {
+      path = process.cwd() + `/src/core/mail/pages/${plantilla}.html`;
+    }
 
     console.log(path);
 
