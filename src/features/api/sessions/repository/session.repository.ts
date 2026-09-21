@@ -106,6 +106,15 @@ export class SessionRepository
     return sessionsRemoveds.acknowledged;
   }
 
+  async revokeAll(userId: Types.ObjectId): Promise<boolean> {
+    const sessionsRemoveds = await this.sessionModel.updateMany(
+      { userId, revokedAt: null },
+      { revokedAt: new Date() },
+    );
+
+    return sessionsRemoveds.acknowledged;
+  }
+
   async findActiveByUser(userId: Types.ObjectId): Promise<SessionDocument[]> {
     return this.sessionModel
       .find({ userId, revokedAt: null, expiresAt: { $gt: new Date() } })

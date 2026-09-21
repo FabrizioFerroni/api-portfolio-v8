@@ -3,6 +3,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
   UnauthorizedException,
@@ -17,19 +18,32 @@ import { AuthMessagesError } from '../errors/error-messages';
 import { LoginDto } from '../dtos/login.dto';
 import { UpdateUserDto } from '@/features/api/user/dto/update-user.dto';
 import { TokenDto } from '../dtos/token.dto';
-import { validatePassword } from '@/shared/utils/functions/validate-passwords';
+import {
+  hashPassword,
+  validatePassword,
+} from '@/shared/utils/functions/validate-passwords';
 import { RefreshtokenDto } from '../dtos/refresh-token.dto';
 import { TokenService } from '@/shared/services/token.service';
 import { PayloadDto } from '../dtos/payload.dto';
 import { SessionService } from '@/features/api/sessions/service/session.service';
 import { Request } from 'express';
 import { SessionDocument } from '@/features/api/sessions/schema/session.schema';
+import { ForgotPasswordDto } from '../dtos/forgot-password';
+import { UserError } from '@/features/api/user/messages/general.messages';
+import { MailQeueService } from '@/core/mail/service/mail-qeue.service';
+import { CreateTokenDto } from '@/features/api/token/dto/create-token.dto';
+import { TokenForgotService } from '@/features/api/token/service/token.service';
+import { ChangePasswordDto } from '../dtos/change-password.dto';
+import { UpdateTokenDto } from '@/features/api/token/dto/update-token.dto';
+import { TokenMessagesError } from '@/features/api/token/error/error-messages';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   private failedLoginAttempts = new Map<string, number>();
   private password_failures: number = configApp().max_pass_failures;
+  private bodyMail: Record<string, string> = {};
 
   constructor(
     private readonly userRepository: UserRepository,
@@ -37,6 +51,8 @@ export class AuthService {
     private readonly transform: TransformDto<UserDocument, AuthResponseDto>,
     private readonly tokenService: TokenService,
     private readonly sessionService: SessionService,
+    private readonly mailService: MailQeueService,
+    private readonly tokenForgotService: TokenForgotService,
   ) {}
 
   transformArray(data: UserDocument[]): AuthResponseDto[] {
@@ -208,5 +224,193 @@ export class AuthService {
 
   async invalidateTokens(userId: string) {
     await this.userRepository.incrementTokenVersion(userId);
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const { email } = dto;
+
+    const user = await this.userRepository.findByEmail(email);
+
+    if (!user) {
+      throw new NotFoundException(UserError.USER_NOT_FOUND);
+    }
+
+    const token_id = crypto.randomUUID();
+
+    const payload: PayloadDto = {
+      email,
+      id: token_id,
+    };
+
+    const token = this.tokenForgotService.generateJWTToken(payload, '2h');
+
+    this.bodyMail.email = email;
+    this.bodyMail.nombre = user.name;
+    this.bodyMail.lastname = user.lastname;
+    this.bodyMail.url = `${configApp().frontHost}/cambiar-clave/${token}`;
+    this.bodyMail.subject = `${user.name}, sigue los pasos para recuperar tu contraseña`;
+
+    await this.sendMail('forgot_password', this.bodyMail);
+
+    const tokenData: CreateTokenDto = {
+      token: token.toString(),
+      email,
+      isUsed: false,
+      token_id,
+    };
+
+    const tokenSaved = this.tokenForgotService.saveToken(tokenData);
+
+    if (!tokenSaved) {
+      throw new InternalServerErrorException(UserError.INTERNAL_SERVER_ERROR);
+    }
+
+    return 'Se ha enviado un correo a su dirección para recuperar su contraseña.';
+  }
+
+  TOKEN_TTL_MS = 60 * 60 * 1000;
+
+  async verifyTokenChange(token: string): Promise<string> {
+    const verifyToken: Record<string, string> =
+      this.tokenForgotService.verifyTokenCatch(
+        token,
+        configApp().secret_jwt_register,
+      );
+
+    const userEmailToken = verifyToken['email'];
+
+    const tokenIdJWT = verifyToken['id'];
+
+    const tokenData =
+      await this.tokenForgotService.findByTokenIdRaw(tokenIdJWT);
+
+    if (tokenData.isUsed) {
+      throw new BadRequestException(TokenMessagesError.USER_TOKEN_USED);
+    }
+
+    const tokenAge = Date.now() - new Date(tokenData.createdAt).getTime();
+
+    if (tokenAge > this.TOKEN_TTL_MS) {
+      throw new BadRequestException(TokenMessagesError.USER_TOKEN_EXPIRED);
+    }
+
+    const user = await this.userRepository.findByEmail(userEmailToken);
+
+    if (!user) {
+      throw new NotFoundException(UserError.USER_NOT_FOUND);
+    }
+
+    return 'El token es valido';
+  }
+
+  async changePassword(dto: ChangePasswordDto) {
+    const { email, password, confirm_password, token } = dto;
+
+    const verifyToken: Record<string, string> =
+      this.tokenForgotService.verifyTokenCatch(
+        token,
+        configApp().secret_jwt_register,
+      );
+
+    const userEmailToken = verifyToken['email'];
+
+    const tokenIdJWT = verifyToken['id'];
+
+    const tokenData =
+      await this.tokenForgotService.findByTokenIdRaw(tokenIdJWT);
+
+    if (tokenData.isUsed) {
+      throw new BadRequestException(TokenMessagesError.USER_TOKEN_USED);
+    }
+
+    const tokenAge = Date.now() - new Date(tokenData.createdAt).getTime();
+
+    if (tokenAge > this.TOKEN_TTL_MS) {
+      throw new BadRequestException(TokenMessagesError.USER_TOKEN_EXPIRED);
+    }
+
+    if (userEmailToken !== email) {
+      throw new BadRequestException(UserError.USER_MAIL_DIFFERENT);
+    }
+
+    const updateTokenData: Partial<UpdateTokenDto> = {
+      isUsed: true,
+    };
+
+    const tokenId = tokenData._id.toString();
+
+    await this.tokenForgotService.updateToken(tokenId, updateTokenData);
+
+    const user = await this.userRepository.findByEmail(userEmailToken);
+
+    if (!user) {
+      throw new NotFoundException(UserError.USER_NOT_FOUND);
+    }
+
+    if (password !== confirm_password) {
+      throw new BadRequestException(UserError.USER_PASSWORD_NOT_MATCH);
+    }
+
+    const editUser = {
+      ...user,
+      password: await hashPassword(password),
+      updatedAt: new Date(),
+    };
+
+    const userId = user._id.toString();
+
+    const result = await this.userRepository.update(
+      userId,
+      editUser as UserDocument,
+    );
+
+    if (!result) {
+      throw new BadRequestException(UserError.USER_ERROR);
+    }
+
+    this.bodyMail.email = email;
+    this.bodyMail.nombre = user.name;
+    this.bodyMail.lastname = user.lastname;
+    this.bodyMail.url = `${configApp().frontHost}/iniciarsesion`;
+    this.bodyMail.subject = `${user.name}, has cambiado con éxito la contraseña`;
+
+    this.sendMail('recovery', this.bodyMail);
+
+    await this.sessionService.revokeAll(new Types.ObjectId(userId));
+
+    return 'Se cambio la contraseña correctamente.';
+  }
+
+  private async sendMail(queue: string, body: Record<string, string>) {
+    this.logger.log(`Enviando correo para la cola ${queue}...`);
+
+    const message = {
+      email: body.email.toLocaleLowerCase(),
+      subject: body.subject,
+      exchange: configApp().exchange,
+      urlApp: configApp().frontHost.toString(),
+      mailInfo: configApp().mailInfo.toString(),
+      emailFrom: `${configApp().emailFrom}`,
+      appImg: `${configApp().appImg}`,
+      nombre: `${body.nombre} ${body.lastname}`,
+      nameClient: body.nombre,
+      emailClient: body.email,
+      subjectClient: body.subject,
+      messageClient: body.url,
+    };
+
+    const result = await this.mailService.sendEmailQueue({
+      message,
+      queue: queue,
+      action: queue,
+      key: configApp().exchange,
+    });
+
+    if (!result) {
+      throw new InternalServerErrorException(UserError.INTERNAL_SERVER_ERROR);
+    }
+
+    this.logger.log(`Correo enviado correctamente para la cola: ${queue}`);
+    return result;
   }
 }

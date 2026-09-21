@@ -14,6 +14,7 @@ export abstract class ISessionRepository extends MongoDBRepository<SessionDocume
     userId: Types.ObjectId,
     keepSessionId: string,
   ): Promise<boolean>;
+  abstract revokeAll(userId: Types.ObjectId): Promise<boolean>;
   abstract findActiveByUser(userId: Types.ObjectId): Promise<SessionDocument[]>;
   abstract findByIdWithHash(sessionId: string): Promise<SessionDocument | null>;
   abstract updateRefreshTokenHash(

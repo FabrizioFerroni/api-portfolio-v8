@@ -6,6 +6,7 @@ export enum UserError {
   USER_ERROR = 'Oops... There were problems creating or editing the user. Please try again later',
   USER_PASSWORD_NOT_STRONG = 'Password must be at least 8 characters long and contain at least 1 lowercase letter, 1 uppercase letter, 1 number, and 1 special symbol.',
   USER_PASSWORD_NOT_MATCH = 'Password and password_verify does not match',
+  USER_MAIL_DIFFERENT = 'The user you have entered does not correspond to the one you previously registered with',
 }
 
 export enum UserMessages {
