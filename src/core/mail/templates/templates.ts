@@ -31,6 +31,40 @@ export const templateToSend = (bodyT: Record<string, unknown>): string => {
 
       break;
     }
+
+    case 'forgot_password': {
+      const body = {
+        year,
+        urlApp,
+        name: nameClient,
+        email: emailClient,
+        subject: subjectClient,
+        url: messageClient,
+        mailinfo: mailInfo,
+        appImg,
+        app: 'Portfolio Fabrizio Dev',
+      };
+      template = templateToString('forgot_password', body);
+
+      break;
+    }
+
+    case 'recovery': {
+      const body = {
+        year,
+        urlApp,
+        name: nameClient,
+        email: emailClient,
+        subject: subjectClient,
+        url: messageClient,
+        mailinfo: mailInfo,
+        appImg,
+        app: 'Portfolio Fabrizio Dev',
+      };
+      template = templateToString('recovery', body);
+
+      break;
+    }
   }
   return template;
 };

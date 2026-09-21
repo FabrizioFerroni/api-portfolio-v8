@@ -1,10 +1,12 @@
 import {
+  BadRequestException,
   Body,
   ClassSerializerInterceptor,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   Req,
   Res,
@@ -36,6 +38,8 @@ import { configApp } from '@/config/app/config.app';
 import { TokenService } from '@/shared/services/token.service';
 import { AuthMessagesError } from '../errors/error-messages';
 import { SessionService } from '@/features/api/sessions/service/session.service';
+import { ForgotPasswordDto } from '../dtos/forgot-password';
+import { ChangePasswordDto } from '../dtos/change-password.dto';
 
 @Controller('auth')
 @ApiTags('Autenticacion de usuario')
@@ -158,6 +162,115 @@ export class AuthController {
     this.setCookie(res, decoded.rememberMe, refresh_token);
 
     return body;
+  }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: OkResponseDto,
+    isArray: false,
+    description: 'Pedir cambio de clave para el usuario',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Email incorrecto',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Usuario no encontrado',
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Hubo un error interno en el servidor',
+  })
+  @ApiOperation({
+    summary: 'Pedir cambio de clave para el usuario',
+  })
+  @Post('olvide-clave')
+  @HttpCode(HttpStatus.OK)
+  forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto);
+  }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: OkResponseDto,
+    isArray: false,
+    description:
+      'Metodo Metodo para verificar el token para cambiar la clave del usuario',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Datos incorrecto',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Usuario no encontrado',
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Hubo un error interno en el servidor',
+  })
+  @ApiOperation({
+    summary: 'Metodo para verificar el token para cambiar la clave del usuario',
+  })
+  @HttpCode(HttpStatus.OK)
+  @Get('verificar-token-clave/:token')
+  verifyTokenPassword(@Param('token') token: string) {
+    return this.authService.verifyTokenChange(token);
+  }
+
+  @ApiResponse({
+    status: HttpStatus.OK,
+    type: OkResponseDto,
+    isArray: false,
+    description: 'Metodo para cambiar la clave del usuario',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Datos incorrecto',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Usuario no encontrado',
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    type: ErrorResponseDto,
+    isArray: false,
+    description: 'Hubo un error interno en el servidor',
+  })
+  @ApiOperation({
+    summary: 'Metodo para cambiar la clave del usuario',
+  })
+  @HttpCode(HttpStatus.OK)
+  @Post('cambiar-clave/:token')
+  changePassword(
+    @Param('token') token: string,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    const { token: tokenBody } = dto;
+
+    if (token !== tokenBody) {
+      throw new BadRequestException('Token inválido');
+    }
+
+    return this.authService.changePassword(dto);
   }
 
   @Get('profile')

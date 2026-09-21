@@ -131,6 +131,10 @@ export class SessionService {
     return this.sessionRepository.revokeAllExcept(userId, keepSessionId);
   }
 
+  async revokeAll(userId: Types.ObjectId): Promise<boolean> {
+    return this.sessionRepository.revokeAll(userId);
+  }
+
   async findActiveByUser(
     userId: Types.ObjectId,
   ): Promise<SessionResponseDto[]> {

@@ -20,6 +20,8 @@ import { BodyAuthMiddleware } from './middleware/bodyauth.middleware';
 import { DecryptCredentialsService } from './services/decryptcredentials.service';
 import { SharedModule } from '@/shared/shared.module';
 import { SessionModule } from '../api/sessions/sessions.module';
+import { TokenModule } from '../api/token/token.module';
+import { CoreModule } from '@/core/core.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { SessionModule } from '../api/sessions/sessions.module';
     SessionModule,
     PassportModule,
     SharedModule,
+    TokenModule,
+    CoreModule,
   ],
   controllers: [AuthController],
   providers: [
@@ -48,6 +52,10 @@ export class AuthModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(BodyAuthMiddleware)
-      .forRoutes({ path: 'auth/login', method: RequestMethod.POST });
+      .forRoutes(
+        { path: 'auth/login', method: RequestMethod.POST },
+        { path: 'auth/olvide-clave', method: RequestMethod.POST },
+        { path: 'auth/cambiar-clave/:token', method: RequestMethod.POST },
+      );
   }
 }

@@ -136,7 +136,13 @@ export class MailQeueService implements OnModuleInit, OnModuleDestroy {
                   message.content.toString(),
                 );
 
-                this.logger.log(` [x] Mensaje recibido de ${queue}:`, data);
+                if (configApp().env == 'development') {
+                  this.logger.log(` [x] Mensaje recibido de ${queue}:`, data);
+                } else {
+                  this.logger.log(
+                    ` [x] Mensaje recibido de ${queue}, enviando email a: ${data.emailClient} con asunto: ${data.subjectClient}`,
+                  );
+                }
 
                 const {
                   email,
@@ -163,12 +169,21 @@ export class MailQeueService implements OnModuleInit, OnModuleDestroy {
                   appImg,
                 });
 
-                await mailer.sendMail({
-                  from: `${nombre} <${email}>`,
-                  to: emailFrom,
-                  subject,
-                  html,
-                });
+                if (queue == 'send_contact') {
+                  await mailer.sendMail({
+                    from: `${nombre} <${email}>`,
+                    to: emailFrom,
+                    subject,
+                    html,
+                  });
+                } else {
+                  await mailer.sendMail({
+                    from: emailFrom,
+                    to: `${nombre} <${email}>`,
+                    subject,
+                    html,
+                  });
+                }
 
                 this.safeAck(channel, message);
               } catch (err) {

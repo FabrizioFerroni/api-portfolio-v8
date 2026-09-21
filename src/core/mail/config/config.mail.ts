@@ -19,11 +19,8 @@ export const templateToString = function (
     const htmlToString: string = template({ op: true });
 
     return htmlToString;
-  } catch (err) {
-    console.log(err);
-
-    throw new Error(
-      'Error al leer o procesar la plantilla HTML: ' + err.message,
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`Error al leer o procesar la plantilla HTML: ${message}`);
   }
 };

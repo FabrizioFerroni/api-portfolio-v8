@@ -14,6 +14,7 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseInterceptor } from './config/interceptors/response.interceptor';
 import { CustomExceptionFilter } from './core/filters/exceptions.filter';
 import { DebugIpController } from './debug.controller';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   controllers: [DebugIpController],
@@ -23,7 +24,7 @@ import { DebugIpController } from './debug.controller';
       envFilePath: [`${process.cwd()}/.env.${process.env.NODE_ENV}.local`],
       load: [configApp],
     }),
-
+    ScheduleModule.forRoot(),
     EventEmitterModule.forRoot({
       verboseMemoryLeak: true,
       maxListeners: 1,
