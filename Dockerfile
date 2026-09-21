@@ -17,6 +17,7 @@ COPY package*.json ./
 RUN npm clean-install --omit=dev && npm cache clean --force
 
 COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder --chown=node:node --chmod=755 /usr/src/app/src/core/mail/pages ./dist/core/mail/pages
 
 RUN mkdir -p /usr/src/app/logs && chown -R node:node /usr/src/app/logs
 RUN mkdir -p /usr/src/app/uploads && chown -R node:node /usr/src/app/uploads
