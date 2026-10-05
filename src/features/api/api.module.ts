@@ -11,6 +11,7 @@ import { PortfolioViewModule } from './portfolioviews/portfolioviews.module';
 import { TestimonialModule } from './testimonials/testimonials.module';
 import { SessionModule } from './sessions/sessions.module';
 import { TokenModule } from './token/token.module';
+import { CVModule } from './cv/cv.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { TokenModule } from './token/token.module';
     SettingsModule,
     TestimonialModule,
     TokenModule,
+    CVModule,
   ],
   exports: [
     PortfolioViewModule,
@@ -40,6 +42,7 @@ import { TokenModule } from './token/token.module';
     SettingsModule,
     TestimonialModule,
     TokenModule,
+    CVModule,
   ],
 })
 export class ApiModule {}
