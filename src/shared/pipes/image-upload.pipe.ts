@@ -21,7 +21,7 @@ export const ImageUploadPipe = ({
       new DetailedMaxFileSizeValidator({ maxSize: maxSizeMB * 1024 * 1024 }),
       new DetailedFileTypeValidator({
         allowedMimes: Array.isArray(fileType) ? fileType : [fileType],
-        allowedExtensions: ['jpg', 'jpeg', 'png', 'webp'],
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'webp', 'pdf'],
       }),
     ],
   });
